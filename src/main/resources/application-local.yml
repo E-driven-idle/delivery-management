@@ -1,9 +1,9 @@
 spring:
   datasource:
     driver-class-name: org.postgresql.Driver
-    url: jdbc:postgresql://localhost:5432/dm
-    username: admin
-    password: 1234
+    url: ${DB_URL}
+    username: ${DB_USERNAME}
+    password: ${DB_PASSWORD}
 
   jpa:
     open-in-view: false
@@ -15,6 +15,19 @@ spring:
         show_sql: false
         highlight_sql: true
         jdbc.time_zone: Asia/Seoul
+
+  # OpenAI
+  ai:
+    openai:
+      api-key: ${OPENAI_API_KEY}
+      base-url: https://api.openai.com/v1
+      chat:
+        options:
+          model: gpt-4o-mini
+    retry:
+      max-attempts: 2
+      backoff:
+        initial-interval: 500ms
 
 logging:
   level:
