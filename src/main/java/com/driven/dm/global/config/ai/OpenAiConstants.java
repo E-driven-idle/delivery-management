@@ -26,4 +26,6 @@ public class OpenAiConstants {
 
 /* TODO
  * Few-Shot Prompting 필요
+ * 입력 텍스트 글자수 제한 필요
+ * 실제 요청 텍스트 마지막에 "답변을 최대한 간결하게 50자 이하로"라는 텍스트를 요청 시에 삽입하여 사용량을 줄이는 처리 추가
  */
