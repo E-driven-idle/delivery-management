@@ -1,3 +1,1 @@
 # delivery-management
-
-delivery management
