@@ -29,6 +29,9 @@ public class User extends BaseEntity {
     @Column(nullable = false, unique = true)
     private String username;
 
+    @Column(nullable = false, unique = true)
+    private String nickname;
+
     @Column(nullable = false)
     private String password;
 
@@ -39,4 +42,29 @@ public class User extends BaseEntity {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private UserStatus status;
+
+    public User(String username, String nickname, String password, UserRole role,
+        UserStatus status) {
+        this.username = username;
+        this.nickname = nickname;
+        this.password = password;
+        this.role = role;
+        this.status = status;
+    }
+
+    public static User of(String username, String password, String nickname) {
+        return new User(username, nickname, password, UserRole.CUSTOMER, UserStatus.ACTIVE);
+    }
+
+    public boolean isNickNameChanged(String nickname) {
+        return !this.nickname.equals(nickname);
+    }
+
+    public void updateNickName(String nickname) {
+        this.nickname = nickname;
+    }
+
+    public void updatePassword(String password) {
+        this.password = password;
+    }
 }
