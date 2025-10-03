@@ -5,10 +5,12 @@ import com.driven.dm.ai.domain.repository.AiCallLogRepository;
 import com.driven.dm.global.config.ai.OpenAiConstants;
 import com.driven.dm.user.domain.entity.User;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+@Slf4j
 @Service
 @RequiredArgsConstructor
 public class AiService {
@@ -42,6 +44,7 @@ public class AiService {
                 .call()         // 실제 LLM 동기 호출 (OpenAI API 호출)
                 .content();     // 응답에서 텍스트만 추출
         } catch (Exception e) {
+            log.error("OpenAI 호출 실패: {}", e.getMessage(), e);
             // 장애 시 간단 fallback
             outputText = menuName + "은(는) 신선한 재료로 만든 담백한 맛이 특징입니다.";
         }
