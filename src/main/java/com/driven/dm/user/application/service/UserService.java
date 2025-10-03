@@ -5,7 +5,9 @@ import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserStatus;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
+import com.driven.dm.user.presentation.controller.dto.ApiUser;
 import com.driven.dm.user.presentation.controller.dto.request.UserUpdateRequest;
+import com.driven.dm.user.presentation.controller.dto.response.UserPageResponse;
 import com.driven.dm.user.presentation.controller.dto.response.UserResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,13 @@ public class UserService {
         return UserResponse.from(findActiveUser(id));
     }
 
+    public UserResponse getUser(ApiUser apiUser, UUID id) {
+        if (!apiUser.role().isAdmin()) {
+            throw AppException.of(UserErrorCode.USER_FORBIDDEN);
+        }
+
+        return getUser(id);
+    }
     @Transactional
     public UserResponse updateUser(UUID id, UserUpdateRequest request) {
         User findUser = findActiveUser(id);
@@ -43,6 +52,20 @@ public class UserService {
         }
 
         return UserResponse.from(findUser);
+    }
+
+    @Transactional(readOnly = true)
+    public UserPageResponse getUsers(ApiUser apiUser, Long page, Long pageSize) {
+        if (!apiUser.role().isAdmin()) {
+            throw AppException.of(UserErrorCode.USER_FORBIDDEN);
+        }
+
+        return UserPageResponse.of(
+            userRepository.findAll((page - 1) * pageSize, pageSize).stream()
+                .map(UserResponse::from)
+                .toList(),
+            userRepository.count()
+        );
     }
 
     private boolean validatePassword(User user, String password) {
@@ -72,6 +95,4 @@ public class UserService {
             throw AppException.of(UserErrorCode.DUPLICATE_NICK_NAME);
         }
     }
-
-
 }
