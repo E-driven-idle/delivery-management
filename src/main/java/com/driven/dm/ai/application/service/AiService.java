@@ -22,7 +22,7 @@ public class AiService {
      * OpenAI 호출로 생성 & AiCallLog 에 요청/응답 저장
      * @param user 현재 사장님 유저
      * @param menuName 메뉴명
-     * @param category 카테고리 (중식/일식 등)
+     * @param category 카테고리 (한식/중식/분식/치킨/피자)
      * @param features 주요 재료 (쉼표로 나열 가능)
      * @return AI가 생성한 메뉴 설명 텍스트
      */
