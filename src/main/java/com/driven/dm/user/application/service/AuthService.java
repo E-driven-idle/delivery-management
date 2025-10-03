@@ -34,14 +34,16 @@ public class AuthService {
     }
 
     private void validateDuplicateUsernameAndNickname(String username, String nickname) {
-        List<User> hits = userRepository.findAllByUsernameOrNickname(username, nickname);
+        List<User> users = userRepository.findAllByUsernameOrNickname(username, nickname);
 
-        boolean usernameDuplicate = hits.stream().anyMatch(u -> u.getUsername().equals(username));
+        boolean usernameDuplicate = users.stream()
+            .anyMatch(user -> user.getUsername().equals(username));
         if (usernameDuplicate) {
             throw AppException.of(UserErrorCode.DUPLICATE_USER_NAME);
         }
 
-        boolean nicknameDuplicate = hits.stream().anyMatch(u -> u.getNickname().equals(nickname));
+        boolean nicknameDuplicate = users.stream()
+            .anyMatch(user -> user.getNickname().equals(nickname));
         if (nicknameDuplicate) {
             throw AppException.of(UserErrorCode.DUPLICATE_NICK_NAME);
         }

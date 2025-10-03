@@ -3,7 +3,9 @@ package com.driven.dm.user.presentation.controller.dto.request;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Pattern;
 import jakarta.validation.constraints.Size;
+import lombok.Builder;
 
+@Builder
 public record UserCreateRequest(
     @NotBlank(message = "ID는 필수입니다.")
     @Size(min = 2, max = 10, message = "ID는 2~10자여야 합니다.")

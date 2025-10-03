@@ -18,6 +18,7 @@ public record UserResponse(
             .id(user.getId())
             .username(user.getUsername())
             .nickName(user.getNickname())
+            .role(user.getRole())
             .build();
     }
 }
