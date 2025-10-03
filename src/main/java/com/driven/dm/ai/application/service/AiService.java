@@ -18,10 +18,12 @@ public class AiService {
 
     // OpenAI 호출로 생성 & AiCallLog 에 요청/응답 저장
     @Transactional
-    public String generateMenuDescription(User user, String menuName) {
+    public String generateMenuDescription(User user, String menuName, String category,
+        String features) {
 
         // 1. 프롬프트 생성
-        String prompt = String.format(OpenAiConstants.MENU_DESCRIPTION_PROMPT, menuName);
+        String prompt = String.format(OpenAiConstants.MENU_DESCRIPTION_PROMPT, menuName, category,
+            features);
 
         // 2. SpringAI + OpenAI 호출
         String outputText;
@@ -41,7 +43,7 @@ public class AiService {
         AiCallLog aiCallLog = AiCallLog.of(
             user,
             OpenAiConstants.PROVIDER_OPENAI,
-            OpenAiConstants.MODEL_GRP_4O_MINI,
+            OpenAiConstants.MODEL_GPT_4O_MINI,
             prompt,
             outputText
         );

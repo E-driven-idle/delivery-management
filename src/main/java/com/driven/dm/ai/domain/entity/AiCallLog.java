@@ -45,8 +45,8 @@ public class AiCallLog extends HistoryBaseEntity {
     @Column(name = "output_text", columnDefinition = "text")
     private String outputText;
 
-    protected AiCallLog(
-        User user, String aiProvider, String model, String prompt, String outputText) {
+    protected AiCallLog(User user, String aiProvider, String model, String prompt,
+        String outputText) {
 
         this.user = user;
         this.aiProvider = aiProvider;
@@ -55,8 +55,8 @@ public class AiCallLog extends HistoryBaseEntity {
         this.outputText = outputText;
     }
 
-    public static AiCallLog of(
-        User user, String aiProvider, String model, String prompt, String outputText) {
+    public static AiCallLog of(User user, String aiProvider, String model, String prompt,
+        String outputText) {
 
         return new AiCallLog(user, aiProvider, model, prompt, outputText);
     }

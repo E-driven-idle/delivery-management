@@ -5,10 +5,10 @@ public class OpenAiConstants {
     private OpenAiConstants() {
     }
 
-    public static final String PROVIDER_OPENAI = "OpenAi";
+    public static final String PROVIDER_OPENAI = "OpenAI";
 
     // 필요 시 모델 상수를 여기서 관리 (yml 기본값을 덮어쓸 때 사용)
-    public static final String MODEL_GRP_4O_MINI = "gpt-4o-mini";
+    public static final String MODEL_GPT_4O_MINI = "gpt-4o-mini";
 
     public static final String MENU_DESCRIPTION_PROMPT =
         """
@@ -23,3 +23,7 @@ public class OpenAiConstants {
             출력은 순수 텍스트만 반환하세요.
             """;
 }
+
+/* TODO
+ * Few-Shot Prompting 필요
+ */
