@@ -73,5 +73,10 @@ public class UserService {
         }
     }
 
+    @Transactional(readOnly = true)
+    public User getActiveUser(UUID id) {
+        return findActiveUser(id);
+    }
+
 
 }
