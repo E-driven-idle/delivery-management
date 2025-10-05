@@ -47,10 +47,7 @@ public class AiController {
 
         User user = userService.getActiveUser(principal.getId());
 
-        AiCallResponseDto aiCallResponseDto = aiService.generateMenuDescription(user, menuName, category,
-            features);
-
-        return ResponseEntity.ok(aiCallResponseDto);
+        return ResponseEntity.ok(aiService.generateMenuDescription(user, menuName, category, features));
     }
 
     /**
