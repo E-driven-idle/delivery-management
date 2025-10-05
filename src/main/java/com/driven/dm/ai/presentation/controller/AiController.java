@@ -66,22 +66,22 @@ public class AiController {
         return ResponseEntity.ok(aiService.getAiCallLog(id));
     }
 
-    /**
-     * [AI 호출 로그 단건 삭제]
-     * MASTER, MANAGER 만 접근 가능
-     *
-     * @param principal 현재 로그인한 사용자
-     * @param id 삭제할 로그의 UUID
-     * @return 삭제 성공 메시지
-     */
-    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
-    @DeleteMapping("/logs/{id}")
-    public ResponseEntity<String> deleteAiCallLog(
-        @AuthenticationPrincipal SecurityUser principal,
-        @PathVariable("id") UUID id) {
-
-        aiService.deleteAiCallLog(id, principal.getId());
-
-        return ResponseEntity.ok("성공적으로 삭제되었습니다.");
-    }
+//    /**
+//     * [AI 호출 로그 단건 삭제]
+//     * MASTER, MANAGER 만 접근 가능
+//     *
+//     * @param principal 현재 로그인한 사용자
+//     * @param id 삭제할 로그의 UUID
+//     * @return 삭제 성공 메시지
+//     */
+//    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+//    @DeleteMapping("/logs/{id}")
+//    public ResponseEntity<String> deleteAiCallLog(
+//        @AuthenticationPrincipal SecurityUser principal,
+//        @PathVariable("id") UUID id) {
+//
+//        aiService.deleteAiCallLog(id, principal.getId());
+//
+//        return ResponseEntity.ok("성공적으로 삭제되었습니다.");
+//    }
 }

@@ -77,29 +77,38 @@ public class AiService {
     @Transactional(readOnly = true)
     public AiCallLogResponseDto getAiCallLog(UUID id) {
 
-        AiCallLog aiCallLog = aiCallLogRepository.findById(id)
-            .orElseThrow(() -> AppException.of(AiErrorCode.AI_LOG_NOT_FOUND));
-
-        return AiCallLogResponseDto.from(aiCallLog);
-    }
-
-    /**
-     * [AI 호출 로그 단건 삭제]
-     *
-     * @param id 삭제할 로그의 UUID
-     * @param deleterUserId 삭제를 수행하는 유저의 UUID
-     */
-    @Transactional
-    public void deleteAiCallLog(UUID id, Long deleterUserId) {
-
-        AiCallLog aiCallLog = aiCallLogRepository.findById(id)
-            .orElseThrow(() -> AppException.of(AiErrorCode.AI_LOG_NOT_FOUND));
+        AiCallLog aiCallLog = getLogOrThrow(id);
 
         if(aiCallLog.isDeleted()) {
             throw AppException.of(AiErrorCode.AI_LOG_ALREADY_DELETED);
         }
 
-        aiCallLog.delete(deleterUserId);
+        return AiCallLogResponseDto.from(aiCallLog);
+    }
+
+//    /**
+//     * [AI 호출 로그 단건 삭제]
+//     *
+//     * @param id 삭제할 로그의 UUID
+//     * @param deleterUserId 삭제를 수행하는 유저의 UUID
+//     */
+//    @Transactional
+//    public void deleteAiCallLog(UUID id, Long deleterUserId) {
+//
+//        AiCallLog aiCallLog = getLogOrThrow(id);
+//
+//        if(aiCallLog.isDeleted()) {
+//            throw AppException.of(AiErrorCode.AI_LOG_ALREADY_DELETED);
+//        }
+//
+//        aiCallLog.delete(deleterUserId);
+//    }
+
+    // [공통] 로그 단건 조회 메서드
+    private AiCallLog getLogOrThrow(UUID id) {
+
+        return aiCallLogRepository.findById(id)
+            .orElseThrow(() -> AppException.of(AiErrorCode.AI_LOG_NOT_FOUND));
     }
 }
 

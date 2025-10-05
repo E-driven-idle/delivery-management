@@ -10,7 +10,7 @@ import org.springframework.http.HttpStatus;
 public enum AiErrorCode implements ErrorCode {
 
     AI_LOG_NOT_FOUND("AI000", "로그를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    AI_LOG_ALREADY_DELETED("AI001", "이미 삭제된 로그입니다.", HttpStatus.NOT_FOUND);
+    AI_LOG_ALREADY_DELETED("AI001", "삭제된 로그입니다.", HttpStatus.NOT_FOUND);
 
     private final String code;
     private final String message;
