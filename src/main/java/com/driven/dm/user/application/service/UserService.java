@@ -3,14 +3,16 @@ package com.driven.dm.user.application.service;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
+import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.domain.entity.UserStatus;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
-import com.driven.dm.user.presentation.controller.dto.ApiUser;
-import com.driven.dm.user.presentation.controller.dto.request.UserUpdateRequest;
-import com.driven.dm.user.presentation.controller.dto.response.UserPageResponse;
-import com.driven.dm.user.presentation.controller.dto.response.UserResponse;
+import com.driven.dm.user.presentation.dto.ApiUser;
+import com.driven.dm.user.presentation.dto.request.UserUpdateRequest;
+import com.driven.dm.user.presentation.dto.response.UserPageResponse;
+import com.driven.dm.user.presentation.dto.response.UserResponse;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -29,13 +31,12 @@ public class UserService {
         return UserResponse.from(findActiveUser(id));
     }
 
-    public UserResponse getUser(ApiUser apiUser, UUID id) {
-        if (!apiUser.role().isAdmin()) {
-            throw AppException.of(UserErrorCode.USER_FORBIDDEN);
-        }
-
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+    public UserResponse getUserByAdmin(UUID id) {
         return getUser(id);
     }
+
     @Transactional
     public UserResponse updateUser(UUID id, UserUpdateRequest request) {
         User findUser = findActiveUser(id);
@@ -55,17 +56,30 @@ public class UserService {
     }
 
     @Transactional(readOnly = true)
-    public UserPageResponse getUsers(ApiUser apiUser, Long page, Long pageSize) {
-        if (!apiUser.role().isAdmin()) {
-            throw AppException.of(UserErrorCode.USER_FORBIDDEN);
-        }
-
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+    public UserPageResponse getUsers(Long page, Long pageSize) {
         return UserPageResponse.of(
             userRepository.findAll((page - 1) * pageSize, pageSize).stream()
                 .map(UserResponse::from)
                 .toList(),
             userRepository.count()
         );
+    }
+
+    @Transactional
+    public UUID deleteUser(UUID id) {
+        User findUser = findActiveUser(id);
+        findUser.deactivate();
+        return findUser.getId();
+    }
+
+    @Transactional
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+    public UserResponse updateRole(UUID id, UserRole targetRole, ApiUser apiUser) {
+        User findUser = findActiveUser(id);
+        findUser.changeRole(targetRole);
+
+        return UserResponse.from(findUser);
     }
 
     private boolean validatePassword(User user, String password) {

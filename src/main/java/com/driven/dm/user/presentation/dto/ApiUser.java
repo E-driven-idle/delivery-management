@@ -1,4 +1,4 @@
-package com.driven.dm.user.presentation.controller.dto;
+package com.driven.dm.user.presentation.dto;
 
 import com.driven.dm.user.domain.entity.UserRole;
 import java.util.UUID;

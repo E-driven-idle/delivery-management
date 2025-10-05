@@ -13,7 +13,7 @@ import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
-import com.driven.dm.user.presentation.controller.dto.request.UserCreateRequest;
+import com.driven.dm.user.presentation.dto.request.UserCreateRequest;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
