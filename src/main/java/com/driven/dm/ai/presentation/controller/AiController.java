@@ -11,6 +11,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -51,7 +52,8 @@ public class AiController {
     }
 
     /**
-     * [AI 호출 로그 단건 조회] MASTER, MANAGER 만 접근 가능
+     * [AI 호출 로그 단건 조회]
+     * MASTER, MANAGER 만 접근 가능
      *
      * @param id 조회할 로그의 UUID
      * @return 조회된 로그 정보를 담은 DTO 객체
@@ -62,5 +64,24 @@ public class AiController {
         @PathVariable("id") UUID id) {
 
         return ResponseEntity.ok(aiService.getAiCallLog(id));
+    }
+
+    /**
+     * [AI 호출 로그 단건 삭제]
+     * MASTER, MANAGER 만 접근 가능
+     *
+     * @param principal 현재 로그인한 사용자
+     * @param id 삭제할 로그의 UUID
+     * @return 삭제 성공 메시지
+     */
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+    @DeleteMapping("/logs/{id}")
+    public ResponseEntity<String> deleteAiCallLog(
+        @AuthenticationPrincipal SecurityUser principal,
+        @PathVariable("id") UUID id) {
+
+        aiService.deleteAiCallLog(id, principal.getId());
+
+        return ResponseEntity.ok("성공적으로 삭제되었습니다.");
     }
 }

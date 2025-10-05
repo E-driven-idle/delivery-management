@@ -82,8 +82,27 @@ public class AiService {
 
         return AiCallLogResponseDto.from(aiCallLog);
     }
+
+    /**
+     * [AI 호출 로그 단건 삭제]
+     *
+     * @param id 삭제할 로그의 UUID
+     * @param deleterUserId 삭제를 수행하는 유저의 UUID
+     */
+    @Transactional
+    public void deleteAiCallLog(UUID id, Long deleterUserId) {
+
+        AiCallLog aiCallLog = aiCallLogRepository.findById(id)
+            .orElseThrow(() -> AppException.of(AiErrorCode.AI_LOG_NOT_FOUND));
+
+        if(aiCallLog.isDeleted()) {
+            throw AppException.of(AiErrorCode.AI_LOG_ALREADY_DELETED);
+        }
+
+        aiCallLog.delete(deleterUserId);
+    }
 }
 
 /* TODO
- * 장애 시 간단 fallback 상세 처리 필요
+ * Description 생성 상황에서 장애 시 간단 fallback -> 상세 처리 필요
  */

@@ -1,6 +1,6 @@
 package com.driven.dm.ai.domain.entity;
 
-import com.driven.dm.global.entity.HistoryBaseEntity;
+import com.driven.dm.global.entity.BaseEntity;
 import com.driven.dm.user.domain.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,7 +22,7 @@ import lombok.ToString;
 @ToString(exclude = {"user", "prompt", "outputText"})
 @Table(name = "p_ai_call_log")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AiCallLog extends HistoryBaseEntity {
+public class AiCallLog extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
