@@ -1,9 +1,14 @@
 package com.driven.dm.ai.application.service;
 
+import com.driven.dm.ai.application.exception.AiErrorCode;
 import com.driven.dm.ai.domain.entity.AiCallLog;
 import com.driven.dm.ai.domain.repository.AiCallLogRepository;
+import com.driven.dm.ai.infrastructure.api.dto.response.AiCallLogResponseDto;
+import com.driven.dm.ai.infrastructure.api.dto.response.AiCallResponseDto;
 import com.driven.dm.global.config.ai.OpenAiConstants;
+import com.driven.dm.global.exception.AppException;
 import com.driven.dm.user.domain.entity.User;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
@@ -19,15 +24,16 @@ public class AiService {
     private final AiCallLogRepository aiCallLogRepository;
 
     /**
-     * OpenAI 호출로 생성 & AiCallLog 에 요청/응답 저장
-     * @param user 현재 사장님 유저
+     * [OpenAI 호출로 생성 & AiCallLog 에 요청/응답 저장]
+     *
+     * @param user     현재 사장님 유저
      * @param menuName 메뉴명
      * @param category 카테고리 (한식/중식/분식/치킨/피자)
      * @param features 주요 재료 (쉼표로 나열 가능)
      * @return AI가 생성한 메뉴 설명 텍스트
      */
     @Transactional
-    public String generateMenuDescription(User user, String menuName, String category,
+    public AiCallResponseDto generateMenuDescription(User user, String menuName, String category,
         String features) {
 
         // 1. 프롬프트 생성
@@ -59,7 +65,22 @@ public class AiService {
         );
         aiCallLogRepository.save(aiCallLog);
 
-        return outputText;
+        return AiCallResponseDto.from(aiCallLog);
+    }
+
+    /**
+     * [AI 호출 로그 단건 조회]
+     *
+     * @param id 조회할 로그의 UUID
+     * @return 조회된 로그를 응답 DTO 로 변환한 객체
+     */
+    @Transactional(readOnly = true)
+    public AiCallLogResponseDto getAiCallLog(UUID id) {
+
+        AiCallLog aiCallLog = aiCallLogRepository.findById(id)
+            .orElseThrow(() -> AppException.of(AiErrorCode.AI_LOG_NOT_FOUND));
+
+        return AiCallLogResponseDto.from(aiCallLog);
     }
 }
 

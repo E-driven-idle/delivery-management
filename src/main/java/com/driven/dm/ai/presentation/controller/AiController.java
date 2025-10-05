@@ -1,13 +1,18 @@
 package com.driven.dm.ai.presentation.controller;
 
 import com.driven.dm.ai.application.service.AiService;
+import com.driven.dm.ai.infrastructure.api.dto.response.AiCallLogResponseDto;
+import com.driven.dm.ai.infrastructure.api.dto.response.AiCallResponseDto;
 import com.driven.dm.global.config.security.SecurityUser;
 import com.driven.dm.user.application.service.UserService;
 import com.driven.dm.user.domain.entity.User;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
@@ -22,7 +27,7 @@ public class AiController {
     private final UserService userService;
 
     /**
-     * [AI 기반 메뉴 설명 자동 생성 API]
+     * [AI 기반 메뉴 설명 자동 생성]
      * 사용자가 등록한 메뉴 정보(메뉴명, 카테고리, 주요 재료)를 바탕으로 OpenAI 모델을 호출하여 200~250자 내외의 설명 문구를 생성
      * 생성된 설명은 AiService 를 통해 DB 로그에 기록
      *
@@ -34,7 +39,7 @@ public class AiController {
      */
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PostMapping("/generate-description")
-    public ResponseEntity<String> generateMenuDescription(
+    public ResponseEntity<AiCallResponseDto> generateMenuDescription(
         @AuthenticationPrincipal SecurityUser principal,
         @RequestParam String menuName,
         @RequestParam String category,
@@ -42,9 +47,23 @@ public class AiController {
 
         User user = userService.getActiveUser(principal.getId());
 
-        String aiDescription = aiService.generateMenuDescription(user, menuName, category,
+        AiCallResponseDto aiCallResponseDto = aiService.generateMenuDescription(user, menuName, category,
             features);
 
-        return ResponseEntity.ok(aiDescription);
+        return ResponseEntity.ok(aiCallResponseDto);
+    }
+
+    /**
+     * [AI 호출 로그 단건 조회] MASTER, MANAGER 만 접근 가능
+     *
+     * @param id 조회할 로그의 UUID
+     * @return 조회된 로그 정보를 담은 DTO 객체
+     */
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+    @GetMapping("/logs/{id}")
+    public ResponseEntity<AiCallLogResponseDto> getAiCallLog(
+        @PathVariable("id") UUID id) {
+
+        return ResponseEntity.ok(aiService.getAiCallLog(id));
     }
 }
