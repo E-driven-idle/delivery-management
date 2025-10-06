@@ -14,7 +14,9 @@ import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserStatus;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import com.driven.dm.user.presentation.dto.request.UserUpdateRequest;
+import com.driven.dm.user.presentation.dto.response.UserPageResponse;
 import com.driven.dm.user.presentation.dto.response.UserResponse;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -72,6 +74,33 @@ class UserServiceTest {
                 .hasMessage(UserErrorCode.USER_NOT_FOUND.getMessage());
 
             then(userRepository).should().findByIdAndStatus(notActiveUserId, UserStatus.ACTIVE);
+        }
+
+        @Test
+        @DisplayName("page, pageSize 로 페이징 조회")
+        void getUsers_withPageAndPageSize() {
+            long page = 1L;
+            long pageSize = 10L;
+            long offset = (page - 1) * pageSize;
+
+            List<User> users = List.of(
+                User.of("sejun1", "1234", "sejunO"),
+                User.of("sejun2", "1234", "sejunO"),
+                User.of("sejun3", "1234", "sejunO")
+            );
+            long count = 3;
+
+            given(userRepository.findAll(offset, pageSize)).willReturn(users);
+            given(userRepository.count()).willReturn(count);
+
+            UserPageResponse response = userService.getUsers(page, pageSize);
+
+            assertThat(response.count()).isEqualTo(count);
+            assertThat(response.users()).hasSize(3);
+            assertThat(response.users().get(0).username()).isEqualTo("sejun1");
+
+            then(userRepository).should().findAll(offset, pageSize);
+            then(userRepository).should().count();
         }
     }
 
