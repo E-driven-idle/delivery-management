@@ -1,6 +1,7 @@
 package com.driven.dm.shop.domain.entity;
 
 import com.driven.dm.global.entity.BaseEntity;
+import com.driven.dm.shop.presentation.dto.request.ShopDto;
 import com.driven.dm.user.domain.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -14,6 +15,7 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
+import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -53,6 +55,22 @@ public class Shop extends BaseEntity {
     @Column(name = "shop_status")
     private ShopStatus status;
 
-    @OneToMany(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<ShopAddress> addresses = new ArrayList<>();
+    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
+    private ShopAddress address;
+
+    public static Shop of(ShopDto shopDto){
+
+        return of(null, shopDto);
+    }
+
+    public static Shop of(User user,ShopDto shopDto){
+        Shop shop = new Shop();
+        shop.owner = user;
+        shop.shopName = shopDto.getShopName();
+        shop.description = shopDto.getDescription();
+        shop.status = ShopStatus.CLOSED;
+        shop.avgRating = 0.0;
+        return shop;
+    }
+
 }
