@@ -3,9 +3,12 @@ package com.driven.dm.shop.application.service;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopDto;
+import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
 import com.driven.dm.shop.presentation.dto.response.ShopResponseDto;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -41,5 +44,22 @@ public class ShopService {
         Shop createdShop = shopRepository.createShop(shop);
 
         return ShopResponseDto.from(createdShop);
+    }
+
+    public List<ShopListResponseDto> getShop() {
+
+        List<Shop> shopList = shopRepository.getShop();
+        List<ShopListResponseDto> shopListResponseDto = new ArrayList<>();
+
+        for (Shop shop : shopList) {
+            ShopListResponseDto shopListResponse = ShopListResponseDto.builder()
+                .shopName(shop.getShopName())
+                .description(shop.getDescription())
+                .avgRating(shop.getAvgRating())
+                .build();
+            shopListResponseDto.add(shopListResponse);
+        }
+
+        return shopListResponseDto;
     }
 }
