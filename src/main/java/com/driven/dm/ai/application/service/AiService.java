@@ -104,6 +104,24 @@ public class AiService {
 //        aiCallLog.delete(deleterUserId);
 //    }
 
+//    /**
+//     * [AI 호출 로그 단건 복구]
+//     *
+//     * @param id 복구할 로그의 UUID
+//     * @param restorerUserId 복구를 수행하는 유저의 UUID
+//     */
+//    @Transactional
+//    public void restoreAiCallLog(UUID id, Long restorerUserId) {
+//
+//        AiCallLog aiCallLog = getLogOrThrow(id);
+//
+//        if(!aiCallLog.isDeleted()) {
+//            throw AppException.of(AiErrorCode.AI_LOG_HAS_NOT_BEEN_DELETED);
+//        }
+//
+//        aiCallLog.restore(restorerUserId);
+//    }
+
     // [공통] 로그 단건 조회 메서드
     private AiCallLog getLogOrThrow(UUID id) {
 
