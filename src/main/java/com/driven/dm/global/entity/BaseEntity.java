@@ -39,7 +39,13 @@ public abstract class BaseEntity {
         this.deletedBy = deletedBy;
     }
 
-    public boolean isDeleted(){
+    public void restore(Long updatedBy) {
+        this.deletedAt = null;
+        this.updatedAt = LocalDateTime.now();
+        this.updatedBy = updatedBy;
+    }
+
+    public boolean isDeleted() {
         return deletedAt != null || deletedBy != null;
     }
 }
