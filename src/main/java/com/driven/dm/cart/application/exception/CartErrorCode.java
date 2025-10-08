@@ -1,21 +1,25 @@
 package com.driven.dm.cart.application.exception;
 
+import com.driven.dm.global.exception.ErrorCode;
 import lombok.Getter;
 import org.springframework.http.HttpStatus;
 
 @Getter
-public enum CartErrorCode {
+public enum CartErrorCode implements ErrorCode {
 
-    // Cart
-    CART_NOT_FOUND("CT001", "장바구니가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-    CART_ITEM_NOT_FOUND("CT002", "장바구니 항목이 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-    INVALID_QUANTITY("CT003", "잘못된 수량입니다. 수량은 1 이상이어야 합니다.", HttpStatus.BAD_REQUEST),
+    // 🔹 400 Bad Request
+    INVALID_QUANTITY("CART000", "수량은 1개 이상이어야 합니다.", HttpStatus.BAD_REQUEST),
+    INVALID_MENU("CART001", "유효하지 않은 메뉴입니다.", HttpStatus.BAD_REQUEST),
 
-    // Menu
-    MENU_NOT_FOUND("MN001", "메뉴가 존재하지 않습니다.", HttpStatus.NOT_FOUND),
-    MENU_SHOP_MISMATCH("MN002", "메뉴와 가게 정보가 일치하지 않습니다.", HttpStatus.BAD_REQUEST),
-    MENU_SOLD_OUT("MN003", "품절된 상품입니다.", HttpStatus.CONFLICT),        // 재고 부족: 일시적 충돌 → 409
-    MENU_SALE_STOPPED("MN004", "판매가 중단된 상품입니다.", HttpStatus.GONE); // 상시 중단(단종) → 410
+    // 🔹 404 Not Found
+    CART_NOT_FOUND("CART002", "장바구니를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+    CART_ITEM_NOT_FOUND("CART003", "장바구니 상품을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
+
+    // 🔹 409 Conflict
+    DUPLICATE_ITEM("CART004", "이미 장바구니에 존재하는 상품입니다.", HttpStatus.CONFLICT),
+
+    // 🔹 403 Forbidden
+    CART_ACCESS_DENIED("CART005", "해당 장바구니에 접근 권한이 없습니다.", HttpStatus.FORBIDDEN);
 
     private final String code;
     private final String message;
