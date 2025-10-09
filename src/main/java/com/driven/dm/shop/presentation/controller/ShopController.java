@@ -1,5 +1,6 @@
 package com.driven.dm.shop.presentation.controller;
 
+import com.driven.dm.global.config.security.SecurityUser;
 import com.driven.dm.shop.application.service.ShopService;
 import com.driven.dm.shop.presentation.dto.request.ShopDto;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
@@ -24,10 +25,10 @@ public class ShopController {
 
     @PostMapping
     public ResponseEntity<ShopResponseDto> createShop(
-        @AuthenticationPrincipal UserDetails userDetails,
+        @AuthenticationPrincipal SecurityUser securityUser,
         @RequestBody ShopDto shopDto){
 
-        ShopResponseDto shopResponseDto = shopService.createShop(userDetails, shopDto);
+        ShopResponseDto shopResponseDto = shopService.createShop(securityUser, shopDto);
 
         return ResponseEntity.ok().body(shopResponseDto);
     }
