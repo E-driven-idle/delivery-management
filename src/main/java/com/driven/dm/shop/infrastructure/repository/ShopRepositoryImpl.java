@@ -1,8 +1,11 @@
 package com.driven.dm.shop.infrastructure.repository;
 
+import com.driven.dm.global.exception.AppException;
+import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.repository.ShopRepository;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
 
@@ -19,8 +22,16 @@ public class ShopRepositoryImpl implements ShopRepository {
     }
 
     @Override
-    public List<Shop> getShop() {
+    public List<Shop> getShopList() {
 
         return shopJpaRepository.findAll();
+    }
+
+    @Override
+    public Shop selectShop(UUID id) {
+
+        return shopJpaRepository.findById(id).orElseThrow(
+            () -> new AppException(ShopErrorCode.SHOP_NOT_FOUND)
+        );
     }
 }

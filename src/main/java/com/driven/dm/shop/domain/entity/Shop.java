@@ -66,7 +66,7 @@ public class Shop extends BaseEntity {
     public static Shop of(User user,ShopDto shopDto){
         Shop shop = new Shop();
         shop.owner = user;
-        shop.shopName = shopDto.getShopName();
+        shop.shopName = shopDto.getShopname();
         shop.description = shopDto.getDescription();
         shop.status = ShopStatus.CLOSED;
         shop.avgRating = 0.0;

@@ -6,11 +6,12 @@ import com.driven.dm.shop.presentation.dto.request.ShopDto;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
 import com.driven.dm.shop.presentation.dto.response.ShopResponseDto;
 import java.util.List;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -34,9 +35,16 @@ public class ShopController {
     }
 
     @GetMapping
-    public ResponseEntity<List<ShopListResponseDto>> getShop(){
-        List<ShopListResponseDto> shopListResponseDto = shopService.getShop();
+    public ResponseEntity<List<ShopListResponseDto>> getShopList(){
+        List<ShopListResponseDto> shopListResponseDto = shopService.getShopList();
 
         return ResponseEntity.ok().body(shopListResponseDto);
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<ShopResponseDto> getShop(@PathVariable UUID id) {
+        ShopResponseDto shopResponseDto = shopService.getShop(id);
+
+        return ResponseEntity.ok().body(shopResponseDto);
     }
 }

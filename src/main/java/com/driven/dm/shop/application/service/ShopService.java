@@ -10,6 +10,7 @@ import com.driven.dm.user.infrastructure.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
@@ -46,9 +47,9 @@ public class ShopService {
         return ShopResponseDto.from(createdShop);
     }
 
-    public List<ShopListResponseDto> getShop() {
+    public List<ShopListResponseDto> getShopList() {
 
-        List<Shop> shopList = shopRepository.getShop();
+        List<Shop> shopList = shopRepository.getShopList();
         List<ShopListResponseDto> shopListResponseDto = new ArrayList<>();
 
         for (Shop shop : shopList) {
@@ -61,5 +62,11 @@ public class ShopService {
         }
 
         return shopListResponseDto;
+    }
+
+    public ShopResponseDto getShop(UUID id) {
+        Shop shop = shopRepository.selectShop(id);
+
+        return  ShopResponseDto.from(shop);
     }
 }
