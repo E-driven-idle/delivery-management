@@ -2,6 +2,7 @@ package com.driven.dm.shop.domain.entity;
 
 import com.driven.dm.global.entity.BaseEntity;
 import com.driven.dm.shop.presentation.dto.request.ShopDto;
+import com.driven.dm.shop.presentation.dto.request.ShopUpdateDto;
 import com.driven.dm.user.domain.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -73,4 +74,15 @@ public class Shop extends BaseEntity {
         return shop;
     }
 
+    public Shop update(ShopUpdateDto shopUpdateDto){
+        this.shopName = shopUpdateDto.getShopname();
+        this.description = shopUpdateDto.getDescription();
+
+        if(shopUpdateDto.getShopstatus().equals("OPEN")){
+            this.status = ShopStatus.OPEN;
+        }else {
+            this.status = ShopStatus.CLOSED;
+        }
+        return this;
+    }
 }

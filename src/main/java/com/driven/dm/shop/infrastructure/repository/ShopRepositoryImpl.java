@@ -34,4 +34,10 @@ public class ShopRepositoryImpl implements ShopRepository {
             () -> new AppException(ShopErrorCode.SHOP_NOT_FOUND)
         );
     }
+
+    @Override
+    public Shop updateShop(Shop shop) {
+
+        return shopJpaRepository.save(shop);
+    }
 }

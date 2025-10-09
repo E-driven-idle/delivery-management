@@ -1,8 +1,13 @@
 package com.driven.dm.shop.application.service;
 
+import com.driven.dm.global.config.security.SecurityUser;
+import com.driven.dm.global.exception.AppException;
+import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
+import com.driven.dm.shop.domain.entity.ShopStatus;
 import com.driven.dm.shop.domain.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopDto;
+import com.driven.dm.shop.presentation.dto.request.ShopUpdateDto;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
 import com.driven.dm.shop.presentation.dto.response.ShopResponseDto;
 import com.driven.dm.user.domain.entity.User;
@@ -22,10 +27,10 @@ public class ShopService {
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
 
-    public ShopResponseDto createShop(UserDetails userDetails, ShopDto shopDto) {
+    public ShopResponseDto createShop(SecurityUser securityUser, ShopDto shopDto) {
 
         // 유저 정보 확인
-        Optional<User> findUser = userRepository.findByUsername(userDetails.getUsername());
+        Optional<User> findUser = userRepository.findById(securityUser.getId());
         if (!findUser.isPresent()) {
             // TODO
             // 회원이 존재하지 않는다면 에러 처리
@@ -52,21 +57,49 @@ public class ShopService {
         List<Shop> shopList = shopRepository.getShopList();
         List<ShopListResponseDto> shopListResponseDto = new ArrayList<>();
 
-        for (Shop shop : shopList) {
-            ShopListResponseDto shopListResponse = ShopListResponseDto.builder()
-                .shopName(shop.getShopName())
-                .description(shop.getDescription())
-                .avgRating(shop.getAvgRating())
-                .build();
-            shopListResponseDto.add(shopListResponse);
+        for (Shop openShop : shopList) {
+            if(openShop.getStatus().equals(ShopStatus.OPEN) || openShop.getStatus().equals(ShopStatus.CLOSED)) {
+                ShopListResponseDto shopListResponse = ShopListResponseDto.builder()
+                    .shopName(openShop.getShopName())
+                    .description(openShop.getDescription())
+                    .avgRating(openShop.getAvgRating())
+                    .build();
+                shopListResponseDto.add(shopListResponse);
+            }
         }
 
         return shopListResponseDto;
     }
 
     public ShopResponseDto getShop(UUID id) {
-        Shop shop = shopRepository.selectShop(id);
+        Shop selectShop = shopRepository.selectShop(id);
 
-        return  ShopResponseDto.from(shop);
+        if(selectShop == null){
+            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
+        }
+
+        return  ShopResponseDto.from(selectShop);
+    }
+
+    public ShopResponseDto updateShop(UUID id, SecurityUser securityUser, ShopUpdateDto shopUpdateDto) {
+        Shop selectShop = shopRepository.selectShop(id);
+        Optional<User> user = userRepository.findById(securityUser.getId());
+        if(!user.get().getRole().toString().equals("ROLE_OWNER")){
+            // TODO
+            // 사장이 아닐 시 예외 처리
+        }
+
+        if (!(user.get().getId() == selectShop.getOwner().getId())) {
+            // TODO
+            // 본인이 등록한 가게가 아니라면 수정 불가능한 예외 처리
+        }
+
+        if (selectShop == null) {
+            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
+        }
+
+        Shop updateShop = selectShop.update(shopUpdateDto);
+        Shop shop = shopRepository.updateShop(updateShop);
+        return ShopResponseDto.from(shop);
     }
 }
