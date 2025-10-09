@@ -12,12 +12,12 @@ import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
 import com.driven.dm.shop.presentation.dto.response.ShopResponseDto;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
+import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -94,12 +94,36 @@ public class ShopService {
             // 본인이 등록한 가게가 아니라면 수정 불가능한 예외 처리
         }
 
-        if (selectShop == null) {
+        if (selectShop.getId() == null) {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }
 
-        Shop updateShop = selectShop.update(shopUpdateDto);
-        Shop shop = shopRepository.updateShop(updateShop);
+        if (selectShop.getStatus().equals(ShopStatus.DELETED)) {
+            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
+        }
+
+        selectShop.update(shopUpdateDto);
+        Shop shop = shopRepository.updateShop(selectShop);
         return ShopResponseDto.from(shop);
+    }
+
+    public void deleteShop(UUID id, SecurityUser securityUser) {
+        Shop shop = shopRepository.selectShop(id);
+        Optional<User> user = userRepository.findById(securityUser.getId());
+
+        if(shop == null){
+            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
+        }
+
+        if(!user.get().getRole().toString().equals("ROLE_OWNER")){
+            // 사장이 아님
+        }
+
+        if(!(user.get().getId() == shop.getId())) {
+            // 본인 가게가 아님
+        }
+
+        Shop deleteShop = shop.delete(user.get().getId());
+        shopRepository.updateShop(deleteShop);
     }
 }

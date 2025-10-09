@@ -74,7 +74,7 @@ public class Shop extends BaseEntity {
         return shop;
     }
 
-    public Shop update(ShopUpdateDto shopUpdateDto){
+    public void update(ShopUpdateDto shopUpdateDto){
         this.shopName = shopUpdateDto.getShopname();
         this.description = shopUpdateDto.getDescription();
 
@@ -83,6 +83,13 @@ public class Shop extends BaseEntity {
         }else {
             this.status = ShopStatus.CLOSED;
         }
+    }
+
+    public Shop delete(UUID id){
+        //super.delete(id);
+
+        this.status = ShopStatus.DELETED;
+
         return this;
     }
 }
