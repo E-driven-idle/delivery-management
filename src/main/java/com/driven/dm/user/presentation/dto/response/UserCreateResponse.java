@@ -1,4 +1,4 @@
-package com.driven.dm.user.presentation.controller.dto.response;
+package com.driven.dm.user.presentation.dto.response;
 
 import java.util.UUID;
 
