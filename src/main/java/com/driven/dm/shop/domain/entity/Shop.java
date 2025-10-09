@@ -85,8 +85,8 @@ public class Shop extends BaseEntity {
         }
     }
 
-    public Shop delete(UUID id){
-        //super.delete(id);
+    public Shop deleteShop(UUID id){
+        delete(id);
 
         this.status = ShopStatus.DELETED;
 

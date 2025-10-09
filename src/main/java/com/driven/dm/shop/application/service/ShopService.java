@@ -123,7 +123,7 @@ public class ShopService {
             // 본인 가게가 아님
         }
 
-        Shop deleteShop = shop.delete(user.get().getId());
+        Shop deleteShop = shop.deleteShop(user.get().getId());
         shopRepository.updateShop(deleteShop);
     }
 }
