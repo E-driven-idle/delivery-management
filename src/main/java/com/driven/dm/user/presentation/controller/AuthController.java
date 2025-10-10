@@ -1,8 +1,8 @@
 package com.driven.dm.user.presentation.controller;
 
 import com.driven.dm.user.application.service.AuthService;
-import com.driven.dm.user.presentation.controller.dto.request.UserCreateRequest;
-import com.driven.dm.user.presentation.controller.dto.response.UserCreateResponse;
+import com.driven.dm.user.presentation.dto.request.UserCreateRequest;
+import com.driven.dm.user.presentation.dto.response.UserCreateResponse;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

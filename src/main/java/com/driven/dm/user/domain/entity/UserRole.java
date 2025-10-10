@@ -12,6 +12,9 @@ public enum UserRole {
         this.authority = authority;
     }
 
+    public boolean isAdmin() {
+        return this == MASTER || this == MANAGER;
+    }
     public String getAuthority() {
         return authority;
     }

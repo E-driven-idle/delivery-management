@@ -67,4 +67,13 @@ public class User extends BaseEntity {
     public void updatePassword(String password) {
         this.password = password;
     }
+
+    public void deactivate() {
+        super.delete(this.id);
+        this.status = UserStatus.DELETED;
+    }
+
+    public void changeRole(UserRole role) {
+        this.role = role;
+    }
 }
