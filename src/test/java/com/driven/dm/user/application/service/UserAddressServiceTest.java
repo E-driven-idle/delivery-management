@@ -85,6 +85,9 @@ class UserAddressServiceTest {
         UserAddressCreateRequest request = new UserAddressCreateRequest(zipCode,
             primaryAddress, detailAddress);
 
+        User mockUser = mock(User.class);
+        given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
+
         given(userAddressRepository.countByUser_IdAndDeletedAtIsNull(userId)).willReturn(10L);
 
         assertThatThrownBy(() -> {

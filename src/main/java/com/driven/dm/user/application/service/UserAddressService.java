@@ -22,11 +22,13 @@ public class UserAddressService {
     private final static int MAX_USER_ADDRESS_COUNT = 10;
 
     public UUID createUserAddress(UUID userId, UserAddressCreateRequest request) {
-        assertUserAddressLimitNotExceeded(userId);
-
         User user = userRepository.findById(userId).orElseThrow(() -> {
             throw AppException.of(UserErrorCode.USER_NOT_FOUND);
         });
+
+        assertUserAddressLimitNotExceeded(userId);
+
+        userAddressRepository.clearDefaultByUserId(userId);
 
         UserAddress userAddress = UserAddress.createDefault(
             user,
@@ -36,6 +38,7 @@ public class UserAddressService {
                 request.detailAddress()
             )
         );
+
         userAddressRepository.save(userAddress);
         return userAddress.getId();
     }
