@@ -4,9 +4,14 @@ import com.driven.dm.cart.application.exception.CartErrorCode;
 import com.driven.dm.cart.domain.entity.Cart;
 import com.driven.dm.cart.domain.entity.CartItem;
 import com.driven.dm.cart.infrastructure.repository.CartItemRepository;
+import com.driven.dm.cart.infrastructure.repository.CartReadRepository;
 import com.driven.dm.cart.infrastructure.repository.CartRepository;
 import com.driven.dm.cart.presentation.dto.request.AddItemRequest;
 import com.driven.dm.cart.presentation.dto.response.CartItemResponse;
+import com.driven.dm.cart.presentation.dto.response.CartResponse;
+import com.driven.dm.cart.presentation.dto.response.ShopCartItemDto;
+import com.driven.dm.cart.presentation.dto.response.UserCartSummaryDto;
+import com.driven.dm.cart.presentation.dto.response.UserCartsResponse;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
 import com.driven.dm.menu.infrastructure.repository.MenuRepository;
@@ -16,8 +21,11 @@ import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import jakarta.transaction.Transactional;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -32,6 +40,12 @@ public class CartService {
     private final ShopRepository shopRepository;
     private final MenuRepository menuRepository;
 
+    // Read repo (JPQL 프로젝션)
+    private final CartReadRepository cartReadRepository;
+
+    /**
+     * 장바구니 상품 추가
+     */
     public CartItemResponse addItem(UUID userId, UUID shopId, AddItemRequest req) {
         if (req.getQuantity() <= 0) {
             throw new AppException(CartErrorCode.INVALID_QUANTITY);
@@ -42,19 +56,15 @@ public class CartService {
 
         Shop shop = shopRepository.selectShop(shopId);
 
-        // TODO: 메뉴기능 구현되면 아래 코드수정
         Menu menu = menuRepository.findById(req.getMenuId())
             .orElseThrow(() -> new IllegalArgumentException("메뉴를 찾을 수 없습니다."));
-
-        // TODO: 메뉴-가게 매핑 생기면 아래 검증 추가
-        // if (!menu.getShop().getId().equals(shopId)) throw new IllegalArgumentException("해당 가게의 메뉴가 아닙니다.");
 
         Cart cart = cartRepository.findByUser_IdAndShop_Id(userId, shopId)
             .orElseGet(() -> cartRepository.save(Cart.of(user, shop)));
 
-        Cart.MenuSnapshot snapshot = new Cart.MenuSnapshot(
-            menu, menu.getId(), menu.getName(), menu.getPrice()
-        );
+        Cart.MenuSnapshot snapshot =
+            new Cart.MenuSnapshot(menu, menu.getId(), menu.getName(), menu.getPrice());
+
         CartItem item = cart.addOrIncrease(snapshot, req.getQuantity());
 
         if (item.getId() == null) {
@@ -64,5 +74,50 @@ public class CartService {
         }
 
         return CartItemResponse.from(item);
+    }
+
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public CartResponse getShopCart(UUID userId, UUID shopId, int page, int size) {
+        PageRequest pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+
+        Page<ShopCartItemDto> itemPage =
+            cartReadRepository.findShopCartItems(userId, shopId, pageable);
+
+        long cartTotal = cartReadRepository.sumShopCartTotal(userId, shopId);
+
+        String shopName = shopRepository.selectShop(shopId).getShopName();
+
+        return CartResponse.builder()
+            .shopName(shopName)
+            .items(itemPage.getContent())
+            .cartTotal(cartTotal)
+            .page(itemPage.getNumber())
+            .size(itemPage.getSize())
+            .totalItems(itemPage.getTotalElements())
+            .totalPages(itemPage.getTotalPages())
+            .build();
+    }
+
+
+    @Transactional(Transactional.TxType.SUPPORTS)
+    public UserCartsResponse getUserCarts(UUID userId, int page, int size) {
+        PageRequest pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+
+        Page<UserCartSummaryDto> summaryPage =
+            cartReadRepository.findUserCartSummaries(userId, pageable);
+
+        long grandTotal = cartReadRepository.sumUserGrandTotal(userId);
+
+        List<UserCartSummaryDto> rows = summaryPage.getContent();
+
+        return UserCartsResponse.builder()
+            .userId(userId)
+            .carts(rows)
+            .grandTotal(grandTotal)
+            .page(summaryPage.getNumber())
+            .size(summaryPage.getSize())
+            .totalShops(summaryPage.getTotalElements())
+            .totalPages(summaryPage.getTotalPages())
+            .build();
     }
 }
