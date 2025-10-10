@@ -1,4 +1,4 @@
-package com.driven.dm.user.presentation.controller.dto.request;
+package com.driven.dm.user.presentation.dto.request;
 
 public record UserAddressCreateRequest(
     String zipCode,

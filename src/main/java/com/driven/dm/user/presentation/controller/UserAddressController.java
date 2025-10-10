@@ -2,8 +2,8 @@ package com.driven.dm.user.presentation.controller;
 
 import com.driven.dm.global.config.security.SecurityUser;
 import com.driven.dm.user.application.service.UserAddressService;
-import com.driven.dm.user.presentation.controller.dto.request.UserAddressCreateRequest;
-import com.driven.dm.user.presentation.controller.dto.response.UserAddressCreateResponse;
+import com.driven.dm.user.presentation.dto.request.UserAddressCreateRequest;
+import com.driven.dm.user.presentation.dto.response.UserAddressCreateResponse;
 import jakarta.validation.Valid;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;

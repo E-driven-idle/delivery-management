@@ -15,7 +15,7 @@ import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserAddress;
 import com.driven.dm.user.infrastructure.repository.UserAddressRepository;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
-import com.driven.dm.user.presentation.controller.dto.request.UserAddressCreateRequest;
+import com.driven.dm.user.presentation.dto.request.UserAddressCreateRequest;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;

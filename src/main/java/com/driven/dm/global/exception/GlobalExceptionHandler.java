@@ -1,6 +1,10 @@
 package com.driven.dm.global.exception;
 
+import com.driven.dm.global.exception.ErrorResponse.ErrorField;
+import java.util.List;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
+import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
 
@@ -11,5 +15,28 @@ public class GlobalExceptionHandler {
     public ResponseEntity<ErrorResponse> handleException(AppException exception) {
         return ResponseEntity.status(exception.getStatus())
             .body(ErrorResponse.from(exception));
+    }
+
+    @ExceptionHandler(MethodArgumentNotValidException.class)
+    public ResponseEntity<ErrorResponse> handleException(
+        MethodArgumentNotValidException exception) {
+        List<ErrorField> errorFields = exception.getBindingResult()
+            .getFieldErrors()
+            .stream()
+            .map(fieldError -> new ErrorResponse.ErrorField(
+                fieldError.getField(),
+                fieldError.getDefaultMessage()))
+            .toList();
+
+        return ResponseEntity
+            .badRequest()
+            .body(ErrorResponse.of(ApiErrorCode.INVALID_REQUEST, errorFields));
+    }
+
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<ErrorResponse> handleException() {
+        return ResponseEntity
+            .badRequest()
+            .body(ErrorResponse.from(ApiErrorCode.INVALID_REQUEST));
     }
 }
