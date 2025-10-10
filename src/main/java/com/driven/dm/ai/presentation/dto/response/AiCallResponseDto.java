@@ -1,4 +1,4 @@
-package com.driven.dm.ai.infrastructure.api.dto.response;
+package com.driven.dm.ai.presentation.dto.response;
 
 import com.driven.dm.ai.domain.entity.AiCallLog;
 import java.time.LocalDateTime;

@@ -1,11 +1,12 @@
 package com.driven.dm.ai.presentation.controller;
 
 import com.driven.dm.ai.application.service.AiService;
-import com.driven.dm.ai.infrastructure.api.dto.response.AiCallLogResponseDto;
-import com.driven.dm.ai.infrastructure.api.dto.response.AiCallResponseDto;
+import com.driven.dm.ai.presentation.dto.response.AiCallLogPageResponseDto;
+import com.driven.dm.ai.presentation.dto.response.AiCallLogResponseDto;
+import com.driven.dm.ai.presentation.dto.response.AiCallResponseDto;
 import com.driven.dm.global.config.security.SecurityUser;
 import com.driven.dm.user.application.service.UserReader;
-import com.driven.dm.user.domain.entity.User;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -48,6 +49,15 @@ public class AiController {
         @RequestParam String features) {
 
         return ResponseEntity.ok(aiService.generateMenuDescription(principal.getId(), menuName, category, features));
+    }
+
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+    @GetMapping("/logs")
+    public ResponseEntity<AiCallLogPageResponseDto> getAiCallLogList(
+        @RequestParam(value = "page", defaultValue = "1") Long page,
+        @RequestParam(value = "pageSize", defaultValue = "20") Long pageSize) {
+
+        return ResponseEntity.ok(aiService.getAiCallLogList(page, pageSize));
     }
 
     /**

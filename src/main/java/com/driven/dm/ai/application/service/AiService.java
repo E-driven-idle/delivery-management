@@ -2,13 +2,15 @@ package com.driven.dm.ai.application.service;
 
 import com.driven.dm.ai.application.exception.AiErrorCode;
 import com.driven.dm.ai.domain.entity.AiCallLog;
-import com.driven.dm.ai.domain.repository.AiCallLogRepository;
-import com.driven.dm.ai.infrastructure.api.dto.response.AiCallLogResponseDto;
-import com.driven.dm.ai.infrastructure.api.dto.response.AiCallResponseDto;
+import com.driven.dm.ai.infrastructure.repository.AiCallLogRepository;
+import com.driven.dm.ai.presentation.dto.response.AiCallLogPageResponseDto;
+import com.driven.dm.ai.presentation.dto.response.AiCallLogResponseDto;
+import com.driven.dm.ai.presentation.dto.response.AiCallResponseDto;
 import com.driven.dm.global.config.ai.OpenAiConstants;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.user.application.service.UserReader;
 import com.driven.dm.user.domain.entity.User;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -74,10 +76,19 @@ public class AiService {
         return AiCallResponseDto.from(aiCallLog);
     }
 
-//    @Transactional(readOnly = true)
-//    public List<AiCallLogResponseDto> getAiCallLogList() {
-//
-//    }
+    @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+    public AiCallLogPageResponseDto getAiCallLogList(Long page, Long pageSize) {
+
+        List<AiCallLogResponseDto> logList = aiCallLogRepository.findLogsWithPaging((page - 1) * pageSize, pageSize)
+            .stream()
+            .map(AiCallLogResponseDto::from)
+            .toList();
+
+        long totalCount = aiCallLogRepository.countAllActiveLogs();
+
+        return AiCallLogPageResponseDto.of(logList, totalCount);
+    }
 
     /**
      * [AI 호출 로그 단건 조회]
