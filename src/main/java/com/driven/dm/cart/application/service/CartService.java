@@ -11,7 +11,7 @@ import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
 import com.driven.dm.menu.infrastructure.repository.MenuRepository;
 import com.driven.dm.shop.domain.entity.Shop;
-import com.driven.dm.shop.infrastructure.repository.ShopRepository;
+import com.driven.dm.shop.domain.repository.ShopRepository;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
@@ -40,12 +40,13 @@ public class CartService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
-        Shop shop = shopRepository.findById(shopId)
-            .orElseThrow(() -> new AppException(CartErrorCode.CART_NOT_FOUND));
+        Shop shop = shopRepository.selectShop(shopId);
 
+        // TODO: 메뉴기능 구현되면 아래 코드수정
         Menu menu = menuRepository.findById(req.getMenuId())
             .orElseThrow(() -> new IllegalArgumentException("메뉴를 찾을 수 없습니다."));
 
+        // TODO: 메뉴-가게 매핑 생기면 아래 검증 추가
         // if (!menu.getShop().getId().equals(shopId)) throw new IllegalArgumentException("해당 가게의 메뉴가 아닙니다.");
 
         Cart cart = cartRepository.findByUser_IdAndShop_Id(userId, shopId)
@@ -55,7 +56,12 @@ public class CartService {
             menu, menu.getId(), menu.getName(), menu.getPrice()
         );
         CartItem item = cart.addOrIncrease(snapshot, req.getQuantity());
-        cartRepository.saveAndFlush(cart);
+
+        if (item.getId() == null) {
+            item = cartItemRepository.saveAndFlush(item);
+        } else {
+            cartRepository.saveAndFlush(cart);
+        }
 
         return CartItemResponse.from(item);
     }
