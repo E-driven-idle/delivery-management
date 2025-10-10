@@ -4,6 +4,7 @@ import jakarta.persistence.Column;
 import jakarta.persistence.EntityListeners;
 import jakarta.persistence.MappedSuperclass;
 import java.time.LocalDateTime;
+import java.util.UUID;
 import lombok.Getter;
 import org.springframework.data.annotation.CreatedBy;
 import org.springframework.data.annotation.CreatedDate;
@@ -18,29 +19,30 @@ public abstract class BaseEntity {
 
     @CreatedBy
     @Column(updatable = false)
-    private Long createdBy;
+    private UUID createdBy;
 
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
 
     @LastModifiedBy
-    private Long updatedBy;
+    private UUID updatedBy;
 
     @LastModifiedDate
     private LocalDateTime updatedAt;
 
-    private Long deletedBy;
+    private UUID deletedBy;
 
     private LocalDateTime deletedAt;
 
-    public void delete(Long deletedBy) {
+    public void delete(UUID deletedBy) {
         this.deletedAt = LocalDateTime.now();
         this.deletedBy = deletedBy;
     }
 
-    public void restore(Long updatedBy) {
+    public void restore(UUID updatedBy) {
         this.deletedAt = null;
+        this.deletedBy = null;
         this.updatedAt = LocalDateTime.now();
         this.updatedBy = updatedBy;
     }
