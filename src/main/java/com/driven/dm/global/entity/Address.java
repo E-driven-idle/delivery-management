@@ -2,9 +2,11 @@ package com.driven.dm.global.entity;
 
 import jakarta.persistence.Embeddable;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
 
 @Getter
 @Embeddable
+@NoArgsConstructor
 public class Address {
     private String zipCode;
     private String primaryAddress;
