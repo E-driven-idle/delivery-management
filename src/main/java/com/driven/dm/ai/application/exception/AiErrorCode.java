@@ -10,8 +10,9 @@ import org.springframework.http.HttpStatus;
 public enum AiErrorCode implements ErrorCode {
 
     AI_LOG_NOT_FOUND("AI000", "로그를 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
-    AI_LOG_ALREADY_DELETED("AI001", "삭제된 로그입니다.", HttpStatus.NOT_FOUND),
-    AI_LOG_HAS_NOT_BEEN_DELETED("AI002", "삭제되지 않은 로그입니다.", HttpStatus.BAD_REQUEST);
+    AI_LOG_UNAUTHORIZED("AI001", "권한이 없습니다.", HttpStatus.UNAUTHORIZED),
+    AI_LOG_ALREADY_DELETED("AI002", "삭제된 로그입니다.", HttpStatus.NOT_FOUND),
+    AI_LOG_HAS_NOT_BEEN_DELETED("AI003", "삭제되지 않은 로그입니다.", HttpStatus.BAD_REQUEST);
 
     private final String code;
     private final String message;

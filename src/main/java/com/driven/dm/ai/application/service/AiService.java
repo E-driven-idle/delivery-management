@@ -8,6 +8,8 @@ import com.driven.dm.ai.infrastructure.api.dto.response.AiCallResponseDto;
 import com.driven.dm.global.config.ai.OpenAiConstants;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.user.domain.entity.User;
+import com.driven.dm.user.domain.entity.UserRole;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -35,6 +37,10 @@ public class AiService {
     @Transactional
     public AiCallResponseDto generateMenuDescription(User user, String menuName, String category,
         String features) {
+
+//        if(user.getRole() == UserRole.CUSTOMER) {
+//            throw AppException.of(AiErrorCode.AI_LOG_UNAUTHORIZED);
+//        }
 
         // 1. 프롬프트 생성
         String prompt = String.format(OpenAiConstants.MENU_DESCRIPTION_PROMPT, menuName, category,
@@ -67,6 +73,11 @@ public class AiService {
 
         return AiCallResponseDto.from(aiCallLog);
     }
+
+//    @Transactional(readOnly = true)
+//    public List<AiCallLogResponseDto> getAiCallLogList() {
+//
+//    }
 
     /**
      * [AI 호출 로그 단건 조회]
@@ -132,4 +143,5 @@ public class AiService {
 
 /* TODO
  * Description 생성 상황에서 장애 시 간단 fallback -> 상세 처리 필요
+ * Description 생성 상황에서 권한 없을 시 예외 처리 필요
  */
