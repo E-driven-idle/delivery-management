@@ -15,6 +15,7 @@ import com.driven.dm.cart.presentation.dto.response.UserCartsResponse;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
 import com.driven.dm.menu.infrastructure.repository.MenuRepository;
+import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.repository.ShopRepository;
 import com.driven.dm.user.application.exception.UserErrorCode;
@@ -30,7 +31,7 @@ import org.springframework.stereotype.Service;
 
 @Service
 @RequiredArgsConstructor
-@Transactional
+@Transactional(Transactional.TxType.SUPPORTS)
 public class CartService {
 
     private final CartRepository cartRepository;
@@ -40,12 +41,9 @@ public class CartService {
     private final ShopRepository shopRepository;
     private final MenuRepository menuRepository;
 
-    // Read repo (JPQL 프로젝션)
     private final CartReadRepository cartReadRepository;
 
-    /**
-     * 장바구니 상품 추가
-     */
+    @Transactional
     public CartItemResponse addItem(UUID userId, UUID shopId, AddItemRequest req) {
         if (req.getQuantity() <= 0) {
             throw new AppException(CartErrorCode.INVALID_QUANTITY);
@@ -55,9 +53,12 @@ public class CartService {
             .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
         Shop shop = shopRepository.selectShop(shopId);
+        if (shop == null) {
+            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
+        }
 
         Menu menu = menuRepository.findById(req.getMenuId())
-            .orElseThrow(() -> new IllegalArgumentException("메뉴를 찾을 수 없습니다."));
+            .orElseThrow(() -> new AppException(CartErrorCode.INVALID_MENU));
 
         Cart cart = cartRepository.findByUser_IdAndShop_Id(userId, shopId)
             .orElseGet(() -> cartRepository.save(Cart.of(user, shop)));
@@ -76,19 +77,23 @@ public class CartService {
         return CartItemResponse.from(item);
     }
 
-    @Transactional(Transactional.TxType.SUPPORTS)
     public CartResponse getShopCart(UUID userId, UUID shopId, int page, int size) {
-        PageRequest pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
+        PageRequest pageable = PageRequest.of(page, size);
+
+        Cart cart = cartRepository.findByUser_IdAndShop_Id(userId, shopId)
+            .orElseThrow(() -> new AppException(CartErrorCode.CART_NOT_FOUND));
+
+        if (!cart.getUser().getId().equals(userId)) {
+            throw new AppException(CartErrorCode.CART_ACCESS_DENIED);
+        }
 
         Page<ShopCartItemDto> itemPage =
             cartReadRepository.findShopCartItems(userId, shopId, pageable);
 
         long cartTotal = cartReadRepository.sumShopCartTotal(userId, shopId);
 
-        String shopName = shopRepository.selectShop(shopId).getShopName();
-
         return CartResponse.builder()
-            .shopName(shopName)
+            .shopName(cart.getShop().getShopName())
             .items(itemPage.getContent())
             .cartTotal(cartTotal)
             .page(itemPage.getNumber())
@@ -98,8 +103,6 @@ public class CartService {
             .build();
     }
 
-
-    @Transactional(Transactional.TxType.SUPPORTS)
     public UserCartsResponse getUserCarts(UUID userId, int page, int size) {
         PageRequest pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
 
