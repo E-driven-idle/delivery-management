@@ -7,13 +7,13 @@ import com.driven.dm.ai.infrastructure.api.dto.response.AiCallLogResponseDto;
 import com.driven.dm.ai.infrastructure.api.dto.response.AiCallResponseDto;
 import com.driven.dm.global.config.ai.OpenAiConstants;
 import com.driven.dm.global.exception.AppException;
+import com.driven.dm.user.application.service.UserReader;
 import com.driven.dm.user.domain.entity.User;
-import com.driven.dm.user.domain.entity.UserRole;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -24,23 +24,23 @@ public class AiService {
 
     private final ChatClient chatClient;
     private final AiCallLogRepository aiCallLogRepository;
+    private final UserReader userReader;
 
     /**
      * [OpenAI 호출로 생성 & AiCallLog 에 요청/응답 저장]
      *
-     * @param user     현재 사장님 유저
+     * @param userId     현재 사장님 유저
      * @param menuName 메뉴명
      * @param category 카테고리 (한식/중식/분식/치킨/피자)
      * @param features 주요 재료 (쉼표로 나열 가능)
      * @return AI가 생성한 메뉴 설명 텍스트
      */
     @Transactional
-    public AiCallResponseDto generateMenuDescription(User user, String menuName, String category,
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
+    public AiCallResponseDto generateMenuDescription(UUID userId, String menuName, String category,
         String features) {
 
-//        if(user.getRole() == UserRole.CUSTOMER) {
-//            throw AppException.of(AiErrorCode.AI_LOG_UNAUTHORIZED);
-//        }
+        User owner = userReader.findActiveUser(userId);
 
         // 1. 프롬프트 생성
         String prompt = String.format(OpenAiConstants.MENU_DESCRIPTION_PROMPT, menuName, category,
@@ -63,7 +63,7 @@ public class AiService {
 
         // 3. 호출 로그 저장
         AiCallLog aiCallLog = AiCallLog.of(
-            user,
+            owner,
             OpenAiConstants.PROVIDER_OPENAI,
             OpenAiConstants.MODEL_GPT_4O_MINI,
             prompt,
@@ -86,6 +86,7 @@ public class AiService {
      * @return 조회된 로그를 응답 DTO 로 변환한 객체
      */
     @Transactional(readOnly = true)
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
     public AiCallLogResponseDto getAiCallLog(UUID id) {
 
         AiCallLog aiCallLog = getLogOrThrow(id);
@@ -97,41 +98,43 @@ public class AiService {
         return AiCallLogResponseDto.from(aiCallLog);
     }
 
-//    /**
-//     * [AI 호출 로그 단건 삭제]
-//     *
-//     * @param id 삭제할 로그의 UUID
-//     * @param deleterUserId 삭제를 수행하는 유저의 UUID
-//     */
-//    @Transactional
-//    public void deleteAiCallLog(UUID id, Long deleterUserId) {
-//
-//        AiCallLog aiCallLog = getLogOrThrow(id);
-//
-//        if(aiCallLog.isDeleted()) {
-//            throw AppException.of(AiErrorCode.AI_LOG_ALREADY_DELETED);
-//        }
-//
-//        aiCallLog.delete(deleterUserId);
-//    }
+    /**
+     * [AI 호출 로그 단건 삭제]
+     *
+     * @param id 삭제할 로그의 UUID
+     * @param deleterUserId 삭제를 수행하는 유저의 UUID
+     */
+    @Transactional
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+    public void deleteAiCallLog(UUID id, UUID deleterUserId) {
 
-//    /**
-//     * [AI 호출 로그 단건 복구]
-//     *
-//     * @param id 복구할 로그의 UUID
-//     * @param restorerUserId 복구를 수행하는 유저의 UUID
-//     */
-//    @Transactional
-//    public void restoreAiCallLog(UUID id, Long restorerUserId) {
-//
-//        AiCallLog aiCallLog = getLogOrThrow(id);
-//
-//        if(!aiCallLog.isDeleted()) {
-//            throw AppException.of(AiErrorCode.AI_LOG_HAS_NOT_BEEN_DELETED);
-//        }
-//
-//        aiCallLog.restore(restorerUserId);
-//    }
+        AiCallLog aiCallLog = getLogOrThrow(id);
+
+        if(aiCallLog.isDeleted()) {
+            throw AppException.of(AiErrorCode.AI_LOG_ALREADY_DELETED);
+        }
+
+        aiCallLog.delete(deleterUserId);
+    }
+
+    /**
+     * [AI 호출 로그 단건 복구]
+     *
+     * @param id 복구할 로그의 UUID
+     * @param restorerUserId 복구를 수행하는 유저의 UUID
+     */
+    @Transactional
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+    public void restoreAiCallLog(UUID id, UUID restorerUserId) {
+
+        AiCallLog aiCallLog = getLogOrThrow(id);
+
+        if(!aiCallLog.isDeleted()) {
+            throw AppException.of(AiErrorCode.AI_LOG_HAS_NOT_BEEN_DELETED);
+        }
+
+        aiCallLog.restore(restorerUserId);
+    }
 
     // [공통] 로그 단건 조회 메서드
     private AiCallLog getLogOrThrow(UUID id) {
