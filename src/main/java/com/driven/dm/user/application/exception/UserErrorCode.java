@@ -10,7 +10,10 @@ public enum UserErrorCode implements ErrorCode {
     USER_UNAUTHORIZED("USER000", "인증에 실패했습니다.", HttpStatus.UNAUTHORIZED),
     USER_NOT_FOUND("USER001", "해당 고객을 찾을 수 없습니다.", HttpStatus.NOT_FOUND),
     DUPLICATE_USER_NAME("USER002", "이미 사용 중인 ID 입니다.", HttpStatus.CONFLICT),
-    DUPLICATE_NICK_NAME("USER003", "이미 사용 중인 닉네임입니다." , HttpStatus.CONFLICT);
+    DUPLICATE_NICK_NAME("USER003", "이미 사용 중인 닉네임입니다.", HttpStatus.CONFLICT),
+    MAX_ADDRESS_REACHED("USER004", "주소는 최대 10개까지 등록가능합니다.", HttpStatus.CONFLICT)
+    ;
+
 
     private final String code;
     private final String message;
