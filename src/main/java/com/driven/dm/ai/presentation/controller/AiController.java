@@ -5,8 +5,6 @@ import com.driven.dm.ai.presentation.dto.response.AiCallLogPageResponseDto;
 import com.driven.dm.ai.presentation.dto.response.AiCallLogResponseDto;
 import com.driven.dm.ai.presentation.dto.response.AiCallResponseDto;
 import com.driven.dm.global.config.security.SecurityUser;
-import com.driven.dm.user.application.service.UserReader;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -27,7 +25,6 @@ import org.springframework.web.bind.annotation.RestController;
 public class AiController {
 
     private final AiService aiService;
-    private final UserReader userReader;
 
     /**
      * [AI 기반 메뉴 설명 자동 생성]
@@ -38,7 +35,7 @@ public class AiController {
      * @param menuName  메뉴명
      * @param category  카테고리 (한식/중식/분식/치킨/피자)
      * @param features  주요 재료/특징 (쉼표로 구분, 예: 돼지고기, 춘장, 양파)
-     * @return AI가 생성한 메뉴 설명 텍스트
+     * @return AI가 생성한 메뉴 설명 텍스트를 담은 DTO 객체
      */
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER', 'OWNER')")
     @PostMapping("/generate-description")
@@ -51,18 +48,27 @@ public class AiController {
         return ResponseEntity.ok(aiService.generateMenuDescription(principal.getId(), menuName, category, features));
     }
 
+    /**
+     * [AI 호출 로그 목록 조회]
+     * MASTER, MANAGER 접근 가능
+     * 페이지는 1부터 시작하며, 최신 생성일시(내림차순) 기준으로 정렬
+     *
+     * @param page 현재 페이지
+     * @param pageSize 페이지 당 내역 수
+     * @return 조회된 로그 리스트 정보와 총 개수를 담은 DTO 객체
+     */
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
     @GetMapping("/logs")
     public ResponseEntity<AiCallLogPageResponseDto> getAiCallLogList(
         @RequestParam(value = "page", defaultValue = "1") Long page,
-        @RequestParam(value = "pageSize", defaultValue = "20") Long pageSize) {
+        @RequestParam(value = "pageSize", defaultValue = "10") Long pageSize) {
 
         return ResponseEntity.ok(aiService.getAiCallLogList(page, pageSize));
     }
 
     /**
      * [AI 호출 로그 단건 조회]
-     * MASTER, MANAGER 만 접근 가능
+     * MASTER, MANAGER 접근 가능
      *
      * @param id 조회할 로그의 UUID
      * @return 조회된 로그 정보를 담은 DTO 객체
@@ -76,8 +82,28 @@ public class AiController {
     }
 
     /**
+     * [AI 호출 로그 검색 조회]
+     * MASTER, MANAGER 접근 가능
+     * 출력 텍스트(output_text) 내용에 주어진 키워드가 포함된 로그만 조회
+     *
+     * @param content 검색 키워드 (null 또는 공백이면 전체 목록 반환)
+     * @param page 현재 페이지
+     * @param pageSize 페이지 당 내역 수
+     * @return 조회된 로그 리스트와 총 개수를 담은 DTO 객체
+     */
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+    @GetMapping("/logs/search")
+    public ResponseEntity<AiCallLogPageResponseDto> searchLogByContent(
+        @RequestParam("keyword") String content,
+        @RequestParam(value = "page", defaultValue = "1") Long page,
+        @RequestParam(value = "pageSize", defaultValue = "10") Long pageSize) {
+
+        return ResponseEntity.ok(aiService.searchLogByContent(content, page, pageSize));
+    }
+
+    /**
      * [AI 호출 로그 단건 삭제]
-     * MASTER, MANAGER 만 접근 가능
+     * MASTER, MANAGER 접근 가능
      *
      * @param principal 현재 로그인한 유저
      * @param id 삭제할 로그의 UUID
@@ -96,7 +122,7 @@ public class AiController {
 
     /**
      * [AI 호출 로그 단건 복구]
-     * MASTER, MANAGER 만 가능
+     * MASTER, MANAGER 접근 가능
      * softDelete 된 로그 내역의 delete_at & deleted_by 값을 null 로 만들어 복구
      *
      * @param principal 현재 로그인한 유저

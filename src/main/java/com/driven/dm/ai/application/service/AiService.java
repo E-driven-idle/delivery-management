@@ -15,6 +15,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.ai.chat.client.ChatClient;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -27,6 +28,10 @@ public class AiService {
     private final ChatClient chatClient;
     private final AiCallLogRepository aiCallLogRepository;
     private final UserReader userReader;
+
+    private static final long DEFAULT_PAGE = 1L;
+    private static final long DEFAULT_SIZE = 10L;
+    private static final List<Long> PAGE_SIZE_WHITELIST = List.of(10L, 30L, 50L);
 
     /**
      * [OpenAI 호출로 생성 & AiCallLog 에 요청/응답 저장]
@@ -48,7 +53,7 @@ public class AiService {
         String prompt = String.format(OpenAiConstants.MENU_DESCRIPTION_PROMPT, menuName, category,
             features);
 
-        // 2. SpringAI + OpenAI 호출
+        // 2. SpringAI(ChatClient → RestClient) + OpenAI API 호출
         String outputText;
 
         try {
@@ -76,17 +81,60 @@ public class AiService {
         return AiCallResponseDto.from(aiCallLog);
     }
 
+    /**
+     * [AI 호출 로그 목록 조회]
+     *
+     * @param page 현재 페이지
+     * @param pageSize 페이지 당 내역 수
+     * @return 조회된 로그 리스트 정보와 전체 개수를 담은 DTO 객체
+     */
     @Transactional(readOnly = true)
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
     public AiCallLogPageResponseDto getAiCallLogList(Long page, Long pageSize) {
 
-        List<AiCallLogResponseDto> logList = aiCallLogRepository.findLogsWithPaging((page - 1) * pageSize, pageSize)
+        long p = normalizePage(page);
+        long s = normalizePageSize(pageSize);
+
+        List<AiCallLogResponseDto> logList = aiCallLogRepository
+            .findLogsWithPaging((p - 1) * s, s)
             .stream()
             .map(AiCallLogResponseDto::from)
             .toList();
 
         long totalCount = aiCallLogRepository.countAllActiveLogs();
 
+        return AiCallLogPageResponseDto.of(logList, totalCount);
+    }
+
+    /**
+     * [AI 호출 로그 검색 조회]
+     *
+     * @param content 검색 키워드 (null 또는 공백이면 전체 목록 반환)
+     * @param page 현재 페이지
+     * @param pageSize 페이지 당 내역 수
+     * @return 조회된 로그 리스트와 총 개수를 담은 DTO 객체
+     */
+    @Transactional(readOnly = true)
+    @Cacheable(value = "searchLog", key = "T(java.util.Objects).hash(#content,#page,#pageSize)")
+    public AiCallLogPageResponseDto searchLogByContent(String content, Long page, Long pageSize) {
+
+        long p = normalizePage(page);
+        long s = normalizePageSize(pageSize);
+
+        // keyword 가 null 이거나 공백이면 전체 목록을 반환
+        if (content == null || content.isBlank()) {
+            return getAiCallLogList(p, s);
+        }
+
+        long offset = (p - 1) * s;
+
+        List<AiCallLogResponseDto> logList = aiCallLogRepository
+            .searchByOutputTextWithPaging(content, offset, s)
+            .stream()
+            .map(AiCallLogResponseDto::from)
+            .toList();
+
+        long totalCount = aiCallLogRepository.countAllActiveLogsByOutputText(content);
         return AiCallLogPageResponseDto.of(logList, totalCount);
     }
 
@@ -152,6 +200,18 @@ public class AiService {
 
         return aiCallLogRepository.findById(id)
             .orElseThrow(() -> AppException.of(AiErrorCode.AI_LOG_NOT_FOUND));
+    }
+
+    // [공통] 페이징 보정 - 페이지 번호: null 또는 1 미만이면 1
+    private static long normalizePage(Long page) {
+
+        return (page == null || page < 1) ? DEFAULT_PAGE : page;
+    }
+
+    // [공통] 페이징 보정 - 페이지 크기: 화이트리스트 외/ null 이면 10
+    private static long normalizePageSize(Long pageSize) {
+
+        return (pageSize == null || !PAGE_SIZE_WHITELIST.contains(pageSize)) ? DEFAULT_SIZE : pageSize;
     }
 }
 
