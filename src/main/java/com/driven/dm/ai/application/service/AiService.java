@@ -135,6 +135,11 @@ public class AiService {
             .toList();
 
         long totalCount = aiCallLogRepository.countAllActiveLogsByOutputText(content);
+
+        if (totalCount == 0) {
+            throw AppException.of(AiErrorCode.AI_LOG_SEARCH_NOT_FOUND);
+        }
+
         return AiCallLogPageResponseDto.of(logList, totalCount);
     }
 
