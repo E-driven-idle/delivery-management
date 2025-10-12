@@ -12,6 +12,7 @@ public enum UserErrorCode implements ErrorCode {
     DUPLICATE_USER_NAME("USER002", "이미 사용 중인 ID 입니다.", HttpStatus.CONFLICT),
     DUPLICATE_NICK_NAME("USER003", "이미 사용 중인 닉네임입니다.", HttpStatus.CONFLICT),
     USER_FORBIDDEN("USER004", "권한이 없습니다", HttpStatus.FORBIDDEN),
+    SELF_ROLE_UPDATE("USER005", "본인의 권한은 변경할 수 없습니다.", HttpStatus.CONFLICT),
     ;
 
     private final String code;
