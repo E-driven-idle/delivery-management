@@ -5,6 +5,8 @@ import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.domain.entity.UserStatus;
+import com.driven.dm.user.domain.rule.RoleTransitionRule;
+import com.driven.dm.user.domain.rule.UserIdAndRole;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import com.driven.dm.user.presentation.dto.ApiUser;
 import com.driven.dm.user.presentation.dto.request.UserUpdateRequest;
@@ -75,11 +77,21 @@ public class UserService {
 
     @Transactional
     @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
-    public UserResponse updateRole(UUID id, UserRole targetRole, ApiUser apiUser) {
-        User findUser = findActiveUser(id);
-        findUser.changeRole(targetRole);
+    public UserResponse updateRole(UUID targetUserId, UserRole newRole, ApiUser apiUser) {
+        User targetUser = findActiveUser(targetUserId);
 
-        return UserResponse.from(findUser);
+        if (targetUser.getRole() == newRole) {
+            return UserResponse.from(targetUser);
+        }
+
+        RoleTransitionRule.authorize(
+            UserIdAndRole.from(apiUser.userId(), apiUser.role()),
+            UserIdAndRole.from(targetUser.getId(), targetUser.getRole()),
+            newRole
+        );
+        targetUser.changeRole(newRole);
+
+        return UserResponse.from(targetUser);
     }
 
     private boolean validatePassword(User user, String password) {
