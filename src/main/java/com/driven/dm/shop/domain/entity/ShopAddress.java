@@ -1,5 +1,7 @@
 package com.driven.dm.shop.domain.entity;
 
+import com.driven.dm.shop.presentation.dto.request.AddressCreateRequest;
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -28,11 +30,50 @@ public class ShopAddress {
 
     @OneToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "shop_id", nullable = false)
+    @JsonBackReference
     private Shop shop;
 
-    @Column(name = "primary_address")
-    private String primaryAddress;
+    @Column(name = "full_address", nullable = false, length = 300)
+    private String fullAddress;
 
-    @Column(name = "detail_address")
-    private String detailAddress;
+    @Column(name = "x")
+    private Double longitude;
+
+    @Column(name = "y")
+    private Double latitude;
+
+    @Column(name = "province_name")
+    private String region_1depth;
+
+    @Column(name = "city_name")
+    private String region_2depth;
+
+    @Column(name = "district_name")
+    private String region_3depth;
+
+    @Column(name = "administrative_code")
+    private String h_code;
+
+    public static ShopAddress of(
+            Shop shop,
+            String fullAddress,
+            Double longitude,
+            Double latitude,
+            String region_1depth_name,
+            String region_2depth_name,
+            String region_3depth_name,
+            String h_code) {
+
+        ShopAddress shopAddress = new ShopAddress();
+        shopAddress.shop = shop;
+        shopAddress.fullAddress = fullAddress;
+        shopAddress.region_1depth = region_1depth_name;
+        shopAddress.region_2depth = region_2depth_name;
+        shopAddress.region_3depth = region_3depth_name;
+        shopAddress.h_code = h_code;
+        shopAddress.longitude = longitude;
+        shopAddress.latitude = latitude;
+        return shopAddress;
+    }
+
 }

@@ -21,7 +21,7 @@ public class ShopResponseDto {
 
     private ShopStatus shopStatus;
 
-    private ShopAddress address;
+    private String address;
 
     public static ShopResponseDto from(Shop shop) {
 
@@ -31,7 +31,7 @@ public class ShopResponseDto {
             .description(shop.getDescription())
             .avgRating(shop.getAvgRating())
             .shopStatus(shop.getStatus())
-            .address(shop.getAddress())
+            .address(shop.getAddress().getFullAddress())
             .build();
     }
 
