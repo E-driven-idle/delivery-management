@@ -10,6 +10,8 @@ import com.driven.dm.menu.presentation.dto.request.MenuCreateRequest;
 import com.driven.dm.menu.presentation.dto.request.MenuUpdateRequest;
 import com.driven.dm.menu.presentation.dto.response.MenuCreateResponse;
 import com.driven.dm.menu.presentation.dto.response.MenuListResponse;
+import com.driven.dm.menu.presentation.dto.response.MenuShopResponse;
+import com.driven.dm.menu.presentation.dto.response.MenuShopResponse.MenuResponse;
 import com.driven.dm.menu.presentation.dto.response.MenuUpdateResponse;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
@@ -17,6 +19,7 @@ import com.driven.dm.shop.domain.repository.ShopRepository;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
+import com.driven.dm.user.domain.entity.UserStatus;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -24,6 +27,7 @@ import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -54,27 +58,21 @@ public class MenuService {
             .build();
     }
 
+    @Transactional(readOnly = true)
     public List<MenuListResponse> menuList(SecurityUser securityUser) {
 
         List<Menu> menus = menuRepository.selectAll();
-        List<MenuListResponse> menuListResponses = new ArrayList<>();
 
-        if (securityUser.getRole().equals(UserRole.MASTER)
-            || securityUser.getRole().equals(UserRole.MANAGER)) {
-            for (Menu menu : menus) {
-                MenuListResponse listResponse = MenuListResponse.from(menu);
-                menuListResponses.add(listResponse);
-            }
-            return menuListResponses;
-        } else {
-            for (Menu menu : menus) {
-                if (menu.getStatus().equals(MenuStatus.ACTIVE)) {
-                    MenuListResponse listResponse = MenuListResponse.from(menu);
-                    menuListResponses.add(listResponse);
-                }
-            }
-            return menuListResponses;
-        }
+        boolean isPrivileged =
+            securityUser.getRole().equals(UserRole.MASTER)
+                || securityUser.getRole().equals(UserRole.MANAGER);
+
+        return menus.stream()
+            .filter(menu ->
+                isPrivileged ? (menu.getStatus().equals(MenuStatus.ACTIVE) || menu.getStatus().equals(MenuStatus.HIDDEN))
+                            : menu.getStatus().equals(MenuStatus.ACTIVE))
+            .map(MenuListResponse::from)
+            .toList();
     }
 
     public MenuUpdateResponse updateMenu(UUID id, SecurityUser securityUser,
@@ -110,6 +108,38 @@ public class MenuService {
 
         menu.deleteMenu();
         menuRepository.deleteMenu(menu);
+    }
+
+    public MenuShopResponse shopMenuList(UUID id, SecurityUser securityUser) {
+
+        User user = getUser(securityUser);
+        Shop shop = shopRepository.findByIdWithMenus(id).orElseThrow(
+            () -> new AppException(ShopErrorCode.SHOP_NOT_FOUND)
+        );
+
+        boolean isPrivileged =
+            isOwner(user, shop)
+            || user.getRole() == UserRole.MANAGER
+            || user.getRole() == UserRole.MASTER;
+
+        List<MenuResponse> menuResponses = shop.getMenu().stream()
+            .filter(menu -> {
+                if (isPrivileged) {
+                    return menu.getStatus() == MenuStatus.ACTIVE || menu.getStatus() == MenuStatus.HIDDEN;
+                } else {
+                    return menu.getStatus() == MenuStatus.ACTIVE;
+                }
+            })
+            .map(menu -> MenuResponse.builder()
+                .menuName(menu.getMenuName())
+                .menuPrice(menu.getMenuPrice())
+                .build())
+            .toList();
+
+        return MenuShopResponse.builder()
+            .shopName(shop.getShopName())
+            .menus(menuResponses)
+            .build();
     }
 
     private Menu getMenu(UUID id) {
