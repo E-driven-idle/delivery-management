@@ -12,13 +12,13 @@ import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
 import com.driven.dm.shop.presentation.dto.response.ShopResponseDto;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -63,6 +63,7 @@ public class ShopService {
                     .shopName(openShop.getShopName())
                     .description(openShop.getDescription())
                     .avgRating(openShop.getAvgRating())
+                    .address(openShop.getAddress())
                     .build();
                 shopListResponseDto.add(shopListResponse);
             }
@@ -71,6 +72,7 @@ public class ShopService {
         return shopListResponseDto;
     }
 
+    @Transactional(readOnly = true)
     public ShopResponseDto getShop(UUID id) {
         Shop selectShop = shopRepository.selectShop(id);
 
@@ -119,7 +121,7 @@ public class ShopService {
             // 사장이 아님
         }
 
-        if(!(user.get().getId() == shop.getId())) {
+        if(!(user.get().getId().equals(shop.getOwner().getId()))) {
             // 본인 가게가 아님
         }
 

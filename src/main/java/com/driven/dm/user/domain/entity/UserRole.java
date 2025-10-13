@@ -1,5 +1,7 @@
 package com.driven.dm.user.domain.entity;
 
+import lombok.Builder;
+
 public enum UserRole {
     MASTER("ROLE_MASTER"),
     MANAGER("ROLE_MANAGER"),
