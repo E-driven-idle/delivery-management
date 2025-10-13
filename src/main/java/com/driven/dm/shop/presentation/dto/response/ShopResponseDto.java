@@ -31,7 +31,6 @@ public class ShopResponseDto {
             .description(shop.getDescription())
             .avgRating(shop.getAvgRating())
             .shopStatus(shop.getStatus())
-            .address(shop.getAddress().getFullAddress())
             .build();
     }
 
