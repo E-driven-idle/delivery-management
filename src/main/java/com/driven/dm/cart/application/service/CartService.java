@@ -22,27 +22,27 @@ import com.driven.dm.shop.domain.repository.ShopRepository;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(Transactional.TxType.SUPPORTS)
+@Transactional(readOnly = true)
 public class CartService {
 
     private final CartRepository cartRepository;
     private final CartItemRepository cartItemRepository;
+    private final CartReadRepository cartReadRepository;
 
     private final UserRepository userRepository;
     private final ShopRepository shopRepository;
     private final MenuRepository menuRepository;
 
-    private final CartReadRepository cartReadRepository;
 
     @Transactional
     public CartItemResponse addItem(UUID userId, UUID shopId, AddItemRequest req) {
@@ -54,14 +54,15 @@ public class CartService {
             .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
         Shop shop = shopRepository.selectShop(shopId);
-        if (shop == null) {
+        if (shop == null || shop.getDeletedAt() != null) {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }
 
         Menu menu = menuRepository.findById(req.getMenuId())
             .orElseThrow(() -> new AppException(CartErrorCode.INVALID_MENU));
 
-        Cart cart = cartRepository.findByUser_IdAndShop_Id(userId, shopId)
+        Cart cart = cartRepository
+            .findByUser_IdAndShop_IdAndDeletedAtIsNull(userId, shopId)
             .orElseGet(() -> cartRepository.save(Cart.of(user, shop)));
 
         Cart.MenuSnapshot snapshot =
@@ -79,22 +80,25 @@ public class CartService {
     }
 
     public CartResponse getShopCart(UUID userId, UUID shopId, int page, int size) {
-        PageRequest pageable = PageRequest.of(page, size);
 
-        Cart cart = cartRepository.findByUser_IdAndShop_Id(userId, shopId)
-            .orElseThrow(() -> new AppException(CartErrorCode.CART_NOT_FOUND));
-
-        if (!cart.getUser().getId().equals(userId)) {
-            throw new AppException(CartErrorCode.CART_ACCESS_DENIED);
-        }
+        PageRequest pageable = PageRequest.of(Math.max(page, 0), Math.max(size, 1));
 
         Page<ShopCartItemDto> itemPage =
             cartReadRepository.findShopCartItems(userId, shopId, pageable);
 
+        if (itemPage.isEmpty()) {
+            throw new AppException(CartErrorCode.CART_NOT_FOUND);
+        }
+
         long cartTotal = cartReadRepository.sumShopCartTotal(userId, shopId);
 
+        Shop shop = shopRepository.selectShop(shopId);
+        if (shop == null || shop.getDeletedAt() != null) {
+            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
+        }
+
         return CartResponse.builder()
-            .shopName(cart.getShop().getShopName())
+            .shopName(shop.getShopName())
             .items(itemPage.getContent())
             .cartTotal(cartTotal)
             .page(itemPage.getNumber())
@@ -109,6 +113,10 @@ public class CartService {
 
         Page<UserCartSummaryDto> summaryPage =
             cartReadRepository.findUserCartSummaries(userId, pageable);
+
+        if (summaryPage.isEmpty()) {
+            throw new AppException(CartErrorCode.CART_NOT_FOUND);
+        }
 
         long grandTotal = cartReadRepository.sumUserGrandTotal(userId);
 
@@ -133,7 +141,8 @@ public class CartService {
             throw new AppException(CartErrorCode.INVALID_QUANTITY);
         }
 
-        CartItem item = cartItemRepository.findById(cartItemId)
+        CartItem item = cartItemRepository
+            .findByIdAndCart_User_IdAndDeletedAtIsNull(cartItemId, userId)
             .orElseThrow(() -> new AppException(CartErrorCode.CART_ITEM_NOT_FOUND));
 
         Cart cart = item.getCart();
@@ -142,8 +151,40 @@ public class CartService {
         }
 
         item.updateQuantity(req.getQuantity());
+
         return CartItemResponse.from(item);
     }
 
 
+    @Transactional
+    public UUID deleteCartItem(UUID userId, UUID shopId, UUID cartItemId) {
+        int result = cartItemRepository.softDeleteOne(userId, shopId, cartItemId);
+        if (result == 0) {
+            throw new AppException(CartErrorCode.CART_ITEM_NOT_FOUND);
+        }
+
+        long left = cartItemRepository.countAliveItemsByUserAndShop(userId, shopId);
+
+        if (left == 0) {
+            cartRepository.softDeleteByUserAndShop(userId, shopId);
+        }
+
+        return cartItemId;
+    }
+
+    @Transactional
+    public void deleteShopCart(UUID userId, UUID shopId) {
+        Cart cart = cartRepository
+            .findByUser_IdAndShop_IdAndDeletedAtIsNull(userId, shopId)
+            .orElseThrow(() -> new AppException(CartErrorCode.CART_NOT_FOUND));
+
+        cartItemRepository.softDeleteAllByCartId(userId, cart.getId());
+        cartRepository.softDeleteByUserAndShop(userId, shopId);
+    }
+
+    @Transactional
+    public void deleteAllCarts(UUID userId) {
+        cartItemRepository.softDeleteAllByUser(userId);
+        cartRepository.softDeleteAllByUser(userId);
+    }
 }
