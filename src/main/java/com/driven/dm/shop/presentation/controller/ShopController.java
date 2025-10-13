@@ -1,11 +1,15 @@
 package com.driven.dm.shop.presentation.controller;
 
 import com.driven.dm.global.config.security.SecurityUser;
+import com.driven.dm.shop.application.service.ShopAddressService;
 import com.driven.dm.shop.application.service.ShopService;
+import com.driven.dm.shop.presentation.dto.request.AddressCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopDto;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateDto;
+import com.driven.dm.shop.presentation.dto.response.AddressResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
 import com.driven.dm.shop.presentation.dto.response.ShopResponseDto;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -26,6 +30,7 @@ import org.springframework.web.bind.annotation.RestController;
 public class ShopController {
 
     private final ShopService shopService;
+    private final ShopAddressService shopAddressService;
 
     @PostMapping
     public ResponseEntity<ShopResponseDto> createShop(
@@ -71,4 +76,16 @@ public class ShopController {
 
         return ResponseEntity.ok().body(null);
     }
+
+    @PostMapping("/{id}/address")
+    public ResponseEntity<AddressResponse> create(
+        @PathVariable UUID id,
+        @AuthenticationPrincipal SecurityUser securityUser,
+        @Valid @RequestBody AddressCreateRequest addressCreateRequest
+    ){
+        AddressResponse addressResponse = shopAddressService.create(id, securityUser, addressCreateRequest);
+
+        return ResponseEntity.ok().body(addressResponse);
+    }
+
 }

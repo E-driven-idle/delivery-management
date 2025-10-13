@@ -4,6 +4,7 @@ import com.driven.dm.global.entity.BaseEntity;
 import com.driven.dm.shop.presentation.dto.request.ShopDto;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateDto;
 import com.driven.dm.user.domain.entity.User;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -42,7 +43,6 @@ public class Shop extends BaseEntity {
     @JoinColumn(name = "user_id", nullable = false)
     private User owner;
 
-
     @Column(name = "shop_name", nullable = false)
     private String shopName;
 
@@ -56,7 +56,8 @@ public class Shop extends BaseEntity {
     @Column(name = "shop_status")
     private ShopStatus status;
 
-    @OneToOne(mappedBy = "shop", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @JsonManagedReference
     private ShopAddress address;
 
     public static Shop of(ShopDto shopDto){
