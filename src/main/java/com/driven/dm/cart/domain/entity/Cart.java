@@ -24,6 +24,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.Where;
 
 @Entity
 @Getter
@@ -53,6 +54,7 @@ public class Cart extends BaseEntity {
     private CartStatus status = CartStatus.ACTIVE;
 
     @OneToMany(mappedBy = "cart", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Where(clause = "deleted_at is null")
     private final List<CartItem> items = new ArrayList<>();
 
     private Cart(User user, Shop shop) {
@@ -74,6 +76,7 @@ public class Cart extends BaseEntity {
         }
 
         CartItem found = items.stream()
+            .filter(i -> i.getDeletedAt() == null)
             .filter(i -> i.getMenu().getId().equals(snapshot.menuId()))
             .findFirst()
             .orElse(null);
@@ -97,6 +100,7 @@ public class Cart extends BaseEntity {
 
     public void recomputeTotal() {
         this.totalPrice = items.stream()
+            .filter(i -> i.getDeletedAt() == null)
             .mapToLong(CartItem::getLineTotal)
             .sum();
     }
