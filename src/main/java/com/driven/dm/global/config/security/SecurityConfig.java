@@ -59,6 +59,10 @@ public class SecurityConfig {
                 .requestMatchers("/v3/api-docs/**").permitAll()
                 .anyRequest().authenticated()
             )
+            .exceptionHandling(ex -> ex
+                .accessDeniedHandler(new JsonAccessDeniedHandler())
+                .authenticationEntryPoint(new JsonAuthenticationEntryPoint())
+            )
             .addFilterBefore(new JwtAuthorizationFilter(jwtTokenProvider),
                 AuthenticationFilter.class)
             .addFilterBefore(authenticationFilter, UsernamePasswordAuthenticationFilter.class)
