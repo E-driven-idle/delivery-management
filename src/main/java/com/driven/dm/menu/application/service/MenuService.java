@@ -7,11 +7,14 @@ import com.driven.dm.menu.domain.entity.MenuStatus;
 import com.driven.dm.menu.domain.repository.MenuRepository;
 import com.driven.dm.menu.presentation.dto.request.MenuCreateDto;
 import com.driven.dm.menu.presentation.dto.response.MenuCreateResponse;
+import com.driven.dm.menu.presentation.dto.response.MenuListResponse;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.repository.ShopRepository;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -54,4 +57,21 @@ public class MenuService {
             .build();
     }
 
+    public List<MenuListResponse> menuList() {
+
+        List<Menu> menus = menuRepository.selectAll();
+        List<MenuListResponse> menuListResponses = new ArrayList<>();
+
+        for (Menu menu : menus) {
+            if (menu.getStatus().equals(MenuStatus.ACTIVE)) {
+                MenuListResponse listResponse = MenuListResponse.builder()
+                    .shopName(menu.getShop().getShopName())
+                    .menuName(menu.getMenuName())
+                    .menuPrice(menu.getMenuPrice())
+                    .build();
+                menuListResponses.add(listResponse);
+            }
+        }
+        return menuListResponses;
+    }
 }

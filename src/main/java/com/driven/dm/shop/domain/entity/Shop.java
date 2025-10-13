@@ -1,6 +1,7 @@
 package com.driven.dm.shop.domain.entity;
 
 import com.driven.dm.global.entity.BaseEntity;
+import com.driven.dm.menu.domain.entity.Menu;
 import com.driven.dm.shop.presentation.dto.request.ShopDto;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateDto;
 import com.driven.dm.user.domain.entity.User;
@@ -59,6 +60,9 @@ public class Shop extends BaseEntity {
     @OneToOne(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
     @JsonManagedReference
     private ShopAddress address;
+
+    @OneToMany(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    private List<Menu> menu = new ArrayList<>();
 
     public static Shop of(ShopDto shopDto){
 
