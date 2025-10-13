@@ -1,6 +1,7 @@
 package com.driven.dm.menu.application.service;
 
 import com.driven.dm.global.exception.AppException;
+import com.driven.dm.menu.application.exception.MenuErrorCode;
 import com.driven.dm.menu.domain.entity.Menu;
 import com.driven.dm.menu.domain.entity.MenuStatus;
 import com.driven.dm.menu.domain.repository.MenuRepository;
@@ -42,12 +43,14 @@ public class MenuService {
         }
 
         Menu menu = Menu.of(shop, menuCreateDto.getMenuname(), menuCreateDto.getMenuprice(), MenuStatus.ACTIVE);
-        Optional<Menu> saveMenu = menuRepository.createMenu(menu);
+        Menu saveMenu = menuRepository.createMenu(menu).orElseThrow(
+            () -> new AppException(MenuErrorCode.MENU_SAVE_FAIL)
+        );
 
         return MenuCreateResponse.builder()
-            .menuId(saveMenu.get().getId())
-            .menuName(saveMenu.get().getMenuName())
-            .menuPrice(saveMenu.get().getMenuPrice())
+            .menuId(saveMenu.getId())
+            .menuName(saveMenu.getMenuName())
+            .menuPrice(saveMenu.getMenuPrice())
             .build();
     }
 
