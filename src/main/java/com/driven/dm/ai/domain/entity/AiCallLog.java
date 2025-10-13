@@ -1,6 +1,6 @@
 package com.driven.dm.ai.domain.entity;
 
-import com.driven.dm.global.entity.HistoryBaseEntity;
+import com.driven.dm.global.entity.BaseEntity;
 import com.driven.dm.user.domain.entity.User;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,10 +19,10 @@ import lombok.ToString;
 
 @Entity
 @Getter
-@ToString
+@ToString(exclude = {"user", "prompt", "outputText"})
 @Table(name = "p_ai_call_log")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class AiCallLog extends HistoryBaseEntity {
+public class AiCallLog extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -38,4 +38,26 @@ public class AiCallLog extends HistoryBaseEntity {
 
     @Column(name = "model")
     private String model;
+
+    @Column(name = "prompt", columnDefinition = "text")
+    private String prompt;
+
+    @Column(name = "output_text", columnDefinition = "text")
+    private String outputText;
+
+    protected AiCallLog(User user, String aiProvider, String model, String prompt,
+        String outputText) {
+
+        this.user = user;
+        this.aiProvider = aiProvider;
+        this.model = model;
+        this.prompt = prompt;
+        this.outputText = outputText;
+    }
+
+    public static AiCallLog of(User user, String aiProvider, String model, String prompt,
+        String outputText) {
+
+        return new AiCallLog(user, aiProvider, model, prompt, outputText);
+    }
 }
