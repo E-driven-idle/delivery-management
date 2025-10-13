@@ -1,17 +1,22 @@
 package com.driven.dm.menu.application.service;
 
+import com.driven.dm.global.config.security.SecurityUser;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.application.exception.MenuErrorCode;
 import com.driven.dm.menu.domain.entity.Menu;
 import com.driven.dm.menu.domain.entity.MenuStatus;
 import com.driven.dm.menu.domain.repository.MenuRepository;
-import com.driven.dm.menu.presentation.dto.request.MenuCreateDto;
+import com.driven.dm.menu.presentation.dto.request.MenuCreateRequest;
+import com.driven.dm.menu.presentation.dto.request.MenuUpdateRequest;
 import com.driven.dm.menu.presentation.dto.response.MenuCreateResponse;
 import com.driven.dm.menu.presentation.dto.response.MenuListResponse;
+import com.driven.dm.menu.presentation.dto.response.MenuUpdateResponse;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.repository.ShopRepository;
+import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
+import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -28,24 +33,16 @@ public class MenuService {
     private final ShopRepository shopRepository;
     private final MenuRepository menuRepository;
 
-    public MenuCreateResponse createMenu(UUID id, MenuCreateDto menuCreateDto) {
-
-        Shop shop = shopRepository.selectShop(id);
+    public MenuCreateResponse createMenu(UUID id, MenuCreateRequest menuCreateRequest) {
+        Shop shop = getShop(id);
         Optional<User> user = userRepository.findById(shop.getOwner().getId());
 
-        if(user.isEmpty()){
-            // 해당 가게에 저장 되어 있는 가게 주인이 없음
+        if (isOwner(user.get(), shop)) {
+            throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 
-        if(!user.get().getId().equals(shop.getOwner().getId())){
-            // 가게 주인이 아니라면
-        }
-
-        if(shop == null){
-            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
-        }
-
-        Menu menu = Menu.of(shop, menuCreateDto.getMenuname(), menuCreateDto.getMenuprice(), MenuStatus.ACTIVE);
+        Menu menu = Menu.of(shop, menuCreateRequest.getMenuname(),
+            menuCreateRequest.getMenuprice());
         Menu saveMenu = menuRepository.createMenu(menu).orElseThrow(
             () -> new AppException(MenuErrorCode.MENU_SAVE_FAIL)
         );
@@ -57,21 +54,73 @@ public class MenuService {
             .build();
     }
 
-    public List<MenuListResponse> menuList() {
+    public List<MenuListResponse> menuList(SecurityUser securityUser) {
 
         List<Menu> menus = menuRepository.selectAll();
         List<MenuListResponse> menuListResponses = new ArrayList<>();
 
-        for (Menu menu : menus) {
-            if (menu.getStatus().equals(MenuStatus.ACTIVE)) {
-                MenuListResponse listResponse = MenuListResponse.builder()
-                    .shopName(menu.getShop().getShopName())
-                    .menuName(menu.getMenuName())
-                    .menuPrice(menu.getMenuPrice())
-                    .build();
+        if (securityUser.getRole().equals(UserRole.MASTER)
+            || securityUser.getRole().equals(UserRole.MANAGER)) {
+            for (Menu menu : menus) {
+                MenuListResponse listResponse = MenuListResponse.from(menu);
                 menuListResponses.add(listResponse);
             }
+            return menuListResponses;
+        } else {
+            for (Menu menu : menus) {
+                if (menu.getStatus().equals(MenuStatus.ACTIVE)) {
+                    MenuListResponse listResponse = MenuListResponse.from(menu);
+                    menuListResponses.add(listResponse);
+                }
+            }
+            return menuListResponses;
         }
-        return menuListResponses;
+    }
+
+    public MenuUpdateResponse updateMenu(UUID id, SecurityUser securityUser,
+        MenuUpdateRequest menuUpdateRequest) {
+        User user = getUser(securityUser);
+        Menu menu = menuRepository.selectMenu(id).orElseThrow(
+            () -> new AppException(MenuErrorCode.MENU_NOT_FOUND)
+        );
+
+        if (!isOwner(user, menu.getShop())) {
+            throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
+        }
+
+        menu.changeMenuName(menuUpdateRequest.getMenuName());
+        menu.changeMenuPrice(menuUpdateRequest.getMenuPrice());
+        menu.changeStatus(menuUpdateRequest.getMenuStatus());
+
+        Menu updatedMenu = menuRepository.updateMenu(menu);
+
+        return MenuUpdateResponse.builder()
+            .menuName(updatedMenu.getMenuName())
+            .menuPrice(updatedMenu.getMenuPrice())
+            .build();
+    }
+
+    private Shop getShop(UUID id) {
+        Shop shop = shopRepository.selectShop(id);
+        if (shop == null) {
+            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
+        }
+        return shop;
+    }
+
+    private User getUser(SecurityUser securityUser) {
+
+        return userRepository.findById(securityUser.getId()).orElseThrow(
+            () -> new AppException(UserErrorCode.USER_NOT_FOUND)
+        );
+    }
+
+    private boolean isOwner(User user, Shop shop) {
+
+        if (user.getId().equals(shop.getOwner().getId())) {
+            return true;
+        } else {
+            return false;
+        }
     }
 }

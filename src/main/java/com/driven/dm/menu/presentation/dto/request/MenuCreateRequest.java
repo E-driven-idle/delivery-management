@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class MenuCreateDto {
+public class MenuCreateRequest {
 
     private String menuname;
     private Long menuprice;

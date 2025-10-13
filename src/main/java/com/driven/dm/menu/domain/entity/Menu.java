@@ -1,5 +1,8 @@
 package com.driven.dm.menu.domain.entity;
 
+import com.driven.dm.global.entity.BaseEntity;
+import com.driven.dm.global.exception.ApiErrorCode;
+import com.driven.dm.global.exception.AppException;
 import com.driven.dm.shop.domain.entity.Shop;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -22,7 +25,7 @@ import lombok.ToString;
 @ToString
 @Table(name = "p_menu")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Menu {
+public class Menu extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -46,13 +49,34 @@ public class Menu {
     @Column(name = "status")
     private MenuStatus status;
 
-    public static Menu of(Shop shop, String menuName, Long menuPrice, MenuStatus status) {
+    public static Menu of(Shop shop, String menuName, Long menuPrice) {
         Menu menu = new Menu();
         menu.shop = shop;
         menu.menuName = menuName;
         menu.menuPrice = menuPrice;
-        menu.status = status;
+        menu.status = MenuStatus.ACTIVE;
         return menu;
+    }
+
+    public void changeMenuName(String menuName) {
+        this.menuName = menuName;
+    }
+
+    public void changeMenuPrice(Long menuPrice) {
+        this.menuPrice = menuPrice;
+    }
+
+    public void changeStatus(String status){
+
+        if (status.equals("active")){
+            this.status = MenuStatus.ACTIVE;
+        } else if (status.equals("hidden")){
+            this.status = MenuStatus.HIDDEN;
+        } else if (status.equals("deleted")) {
+            this.status = MenuStatus.DELETED;
+        } else {
+            throw new AppException(ApiErrorCode.INVALID_REQUEST);
+        }
     }
 
 }
