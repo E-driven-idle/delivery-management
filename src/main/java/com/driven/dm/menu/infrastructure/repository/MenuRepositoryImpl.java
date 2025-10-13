@@ -38,4 +38,10 @@ public class MenuRepositoryImpl implements MenuRepository {
 
         return menuJpaRepository.findById(id);
     }
+
+    @Override
+    public void deleteMenu(Menu menu) {
+
+        menuJpaRepository.save(menu);
+    }
 }

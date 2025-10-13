@@ -14,4 +14,6 @@ public interface MenuRepository {
     Menu updateMenu(Menu menu);
 
     Optional<Menu> selectMenu(UUID id);
+
+    void deleteMenu(Menu menu);
 }

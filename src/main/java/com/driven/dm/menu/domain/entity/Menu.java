@@ -79,4 +79,9 @@ public class Menu extends BaseEntity {
         }
     }
 
+    public void deleteMenu() {
+        delete(this.getShop().getOwner().getId());
+        this.status = MenuStatus.DELETED;
+    }
+
 }

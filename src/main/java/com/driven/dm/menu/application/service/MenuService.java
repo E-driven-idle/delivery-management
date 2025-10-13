@@ -100,6 +100,25 @@ public class MenuService {
             .build();
     }
 
+    public void deleteMenu(UUID id, SecurityUser securityUser) {
+        Menu menu = getMenu(id);
+        User user = getUser(securityUser);
+
+        if (!isOwner(user, menu.getShop())) {
+            throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
+        }
+
+        menu.deleteMenu();
+        menuRepository.deleteMenu(menu);
+    }
+
+    private Menu getMenu(UUID id) {
+
+        return menuRepository.selectMenu(id).orElseThrow(
+            () -> new AppException(MenuErrorCode.MENU_NOT_FOUND)
+        );
+    }
+
     private Shop getShop(UUID id) {
         Shop shop = shopRepository.selectShop(id);
         if (shop == null) {

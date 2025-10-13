@@ -12,6 +12,7 @@ import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -53,6 +54,15 @@ public class MenuController {
         MenuUpdateResponse menuUpdateResponse = menuService.updateMenu(id, securityUser, menuUpdateRequest);
 
         return ResponseEntity.ok().body(menuUpdateResponse);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteMenu(
+        @PathVariable UUID id,
+        @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        menuService.deleteMenu(id,securityUser);
+        return ResponseEntity.ok().build();
     }
 
 }
