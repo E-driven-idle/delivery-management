@@ -8,6 +8,7 @@ import com.driven.dm.user.domain.entity.UserAddress;
 import com.driven.dm.user.infrastructure.repository.UserAddressRepository;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import com.driven.dm.user.presentation.dto.request.UserAddressCreateRequest;
+import com.driven.dm.user.presentation.dto.request.UserAddressUpdateRequest;
 import com.driven.dm.user.presentation.dto.response.UserAddressResponse;
 import java.util.List;
 import java.util.UUID;
@@ -56,6 +57,27 @@ public class UserAddressService {
         return addresses.stream()
             .map(UserAddressResponse::from)
             .toList();
+    }
+
+    @Transactional
+    public UserAddressResponse updateAddress(UUID userId, UUID addressId,
+        UserAddressUpdateRequest request) {
+        UserAddress userAddress = userAddressRepository.findByIdAndUser_IdAndDeletedAtIsNull(
+                addressId, userId)
+            .orElseThrow(() -> AppException.of(UserErrorCode.USER_ADDRESS_NOT_FOUND));
+
+        userAddress.updateAddress(
+            request.zipCode(),
+            request.primaryAddress(),
+            request.detailAddress()
+        );
+
+        if (Boolean.TRUE.equals(request.isDefault()) && !userAddress.isDefault()) {
+            userAddress.markAsDefault();
+            userAddressRepository.clearDefaultOfUserExcept(userId, addressId);
+        }
+
+        return UserAddressResponse.from(userAddress);
     }
 
     private void assertUserAddressLimitNotExceeded(UUID userId) {
