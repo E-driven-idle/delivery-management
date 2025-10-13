@@ -86,4 +86,14 @@ public class UserAddressService {
             throw new AppException(UserErrorCode.MAX_ADDRESS_REACHED);
         }
     }
+
+    @Transactional
+    public UUID deleteAddress(UUID userId, UUID addressId) {
+        UserAddress userAddress = userAddressRepository.findByIdAndUser_IdAndDeletedAtIsNull(
+                addressId, userId)
+            .orElseThrow(() -> AppException.of(UserErrorCode.USER_ADDRESS_NOT_FOUND));
+
+        userAddress.deactivate(userId);
+        return userAddress.getId();
+    }
 }

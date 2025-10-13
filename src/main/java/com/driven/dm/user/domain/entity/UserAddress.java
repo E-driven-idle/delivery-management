@@ -56,4 +56,8 @@ public class UserAddress extends BaseEntity {
     public void markAsDefault() {
         this.isDefault = true;
     }
+
+    public void deactivate(UUID deletedBy) {
+        super.delete(deletedBy);
+    }
 }
