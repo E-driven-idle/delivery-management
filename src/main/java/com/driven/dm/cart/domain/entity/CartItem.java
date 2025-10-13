@@ -83,4 +83,8 @@ public class CartItem extends BaseEntity {
     public int hashCode() {
         return Objects.hashCode(id);
     }
+
+    public void updateQuantity(int quantity) {
+        this.quantity = quantity;
+    }
 }

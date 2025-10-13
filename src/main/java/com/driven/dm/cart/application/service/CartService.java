@@ -7,6 +7,7 @@ import com.driven.dm.cart.infrastructure.repository.CartItemRepository;
 import com.driven.dm.cart.infrastructure.repository.CartReadRepository;
 import com.driven.dm.cart.infrastructure.repository.CartRepository;
 import com.driven.dm.cart.presentation.dto.request.AddItemRequest;
+import com.driven.dm.cart.presentation.dto.request.UpdateQtyRequest;
 import com.driven.dm.cart.presentation.dto.response.CartItemResponse;
 import com.driven.dm.cart.presentation.dto.response.CartResponse;
 import com.driven.dm.cart.presentation.dto.response.ShopCartItemDto;
@@ -123,4 +124,26 @@ public class CartService {
             .totalPages(summaryPage.getTotalPages())
             .build();
     }
+
+
+    @Transactional
+    public CartItemResponse updateQuantity(UUID userId, UUID shopId, UUID cartItemId,
+        UpdateQtyRequest req) {
+        if (req.getQuantity() <= 0) {
+            throw new AppException(CartErrorCode.INVALID_QUANTITY);
+        }
+
+        CartItem item = cartItemRepository.findById(cartItemId)
+            .orElseThrow(() -> new AppException(CartErrorCode.CART_ITEM_NOT_FOUND));
+
+        Cart cart = item.getCart();
+        if (!cart.getUser().getId().equals(userId) || !cart.getShop().getId().equals(shopId)) {
+            throw new AppException(CartErrorCode.CART_ACCESS_DENIED);
+        }
+
+        item.updateQuantity(req.getQuantity());
+        return CartItemResponse.from(item);
+    }
+
+
 }
