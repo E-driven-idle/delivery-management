@@ -49,7 +49,7 @@ public class ShopAddressService {
         // 카카오 API 호출
         var docOpt = kakaoLocalClient.searchFirst(req.getQuery());
         var doc = docOpt.orElseThrow(
-            () -> new AppException(ShopErrorCode.ADDRESS_NO_SUCH)
+            () -> new AppException(ShopErrorCode.ADDRESS_NOT_FOUND)
         );
 
         // 전체주소 & 좌표 추출
