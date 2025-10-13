@@ -1,5 +1,6 @@
 package com.driven.dm.menu.domain.entity;
 
+import com.driven.dm.shop.domain.entity.Shop;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -7,6 +8,8 @@ import jakarta.persistence.Enumerated;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
@@ -26,14 +29,15 @@ public class Menu {
     @Column(name = "menu_id", nullable = false, updatable = false)
     private UUID id;
 
-    @Column(name = "name")
-    private String name;
+    @ManyToOne
+    @JoinColumn(name = "shop_id", nullable = false)
+    private Shop shop;
 
-    @Column(name = "shop_info")
-    private String shopInfo;
+    @Column(name = "menu_name")
+    private String menuName;
 
-    @Column(name = "price")
-    private Long price;
+    @Column(name = "menu_price")
+    private Long menuPrice;
 
     @Column(name = "display_order")
     private Integer displayOrder;
@@ -41,4 +45,14 @@ public class Menu {
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private MenuStatus status;
+
+    public static Menu of(Shop shop, String menuName, Long menuPrice, MenuStatus status) {
+        Menu menu = new Menu();
+        menu.shop = shop;
+        menu.menuName = menuName;
+        menu.menuPrice = menuPrice;
+        menu.status = status;
+        return menu;
+    }
+
 }
