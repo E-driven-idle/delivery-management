@@ -8,9 +8,12 @@ import com.driven.dm.user.domain.entity.UserAddress;
 import com.driven.dm.user.infrastructure.repository.UserAddressRepository;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import com.driven.dm.user.presentation.dto.request.UserAddressCreateRequest;
+import com.driven.dm.user.presentation.dto.response.UserAddressResponse;
+import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -21,6 +24,7 @@ public class UserAddressService {
 
     private final static int MAX_USER_ADDRESS_COUNT = 10;
 
+    @Transactional
     public UUID createUserAddress(UUID userId, UserAddressCreateRequest request) {
         User user = userRepository.findById(userId).orElseThrow(() -> {
             throw AppException.of(UserErrorCode.USER_NOT_FOUND);
@@ -41,6 +45,17 @@ public class UserAddressService {
 
         userAddressRepository.save(userAddress);
         return userAddress.getId();
+    }
+
+    @Transactional(readOnly = true)
+    public List<UserAddressResponse> getAddresses(UUID userId) {
+        List<UserAddress> addresses =
+            userAddressRepository.findAllByUserIdAndDeletedAtIsNullOrderByIsDefaultDescCreatedAtDesc(
+                userId);
+
+        return addresses.stream()
+            .map(UserAddressResponse::from)
+            .toList();
     }
 
     private void assertUserAddressLimitNotExceeded(UUID userId) {
