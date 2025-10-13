@@ -38,3 +38,8 @@ logging:
 jwt:
   secret: ${JWT_SECRET}
   expiration: ${EXPIRATION}
+
+# KAKAO
+kakao:
+  local:
+    rest-api-key: ${KAKAO_KEY}
