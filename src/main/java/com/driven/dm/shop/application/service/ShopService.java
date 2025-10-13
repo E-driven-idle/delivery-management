@@ -121,7 +121,7 @@ public class ShopService {
             // 사장이 아님
         }
 
-        if(!(user.get().getId() == shop.getId())) {
+        if(!(user.get().getId().equals(shop.getOwner().getId()))) {
             // 본인 가게가 아님
         }
 
