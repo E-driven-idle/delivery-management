@@ -12,10 +12,10 @@ import com.driven.dm.shop.presentation.dto.response.AddressResponse;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
-import jakarta.transaction.Transactional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
 @RequiredArgsConstructor
@@ -38,7 +38,7 @@ public class ShopAddressService {
             () -> new AppException(UserErrorCode.USER_NOT_FOUND)
         );
 
-        if(shop.getOwner().getId() != user.getId()){
+        if(shop.getOwner().getId().equals(user.getId())) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 
