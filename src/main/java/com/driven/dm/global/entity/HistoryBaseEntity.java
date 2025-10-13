@@ -14,11 +14,11 @@ import org.springframework.data.jpa.domain.support.AuditingEntityListener;
 @EntityListeners(AuditingEntityListener.class)
 public abstract class HistoryBaseEntity {
 
-    @CreatedBy
-    @Column(updatable = false)
-    private Long createdBy;
-
     @CreatedDate
     @Column(updatable = false)
     private LocalDateTime createdAt;
+
+    @CreatedBy
+    @Column(updatable = false)
+    private Long createdBy;
 }

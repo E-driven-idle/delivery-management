@@ -40,7 +40,14 @@ public abstract class BaseEntity {
         this.deletedBy = deletedBy;
     }
 
-    public boolean isDeleted(){
+    public void restore(UUID updatedBy) {
+        this.deletedAt = null;
+        this.deletedBy = null;
+        this.updatedAt = LocalDateTime.now();
+        this.updatedBy = updatedBy;
+    }
+
+    public boolean isDeleted() {
         return deletedAt != null || deletedBy != null;
     }
 }
