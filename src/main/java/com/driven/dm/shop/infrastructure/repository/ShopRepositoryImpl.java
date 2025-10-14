@@ -5,6 +5,7 @@ import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.repository.ShopRepository;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Repository;
@@ -39,5 +40,11 @@ public class ShopRepositoryImpl implements ShopRepository {
     public Shop updateShop(Shop shop) {
 
         return shopJpaRepository.save(shop);
+    }
+
+    @Override
+    public Optional<Shop> findByIdWithMenus(UUID id) {
+
+        return shopJpaRepository.findByIdWithMenus(id);
     }
 }
