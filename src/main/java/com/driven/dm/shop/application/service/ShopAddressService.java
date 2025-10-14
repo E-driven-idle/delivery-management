@@ -38,7 +38,7 @@ public class ShopAddressService {
             () -> new AppException(UserErrorCode.USER_NOT_FOUND)
         );
 
-        if(shop.getOwner().getId().equals(user.getId())) {
+        if(!shop.getOwner().getId().equals(user.getId())) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 
@@ -49,7 +49,7 @@ public class ShopAddressService {
         // 카카오 API 호출
         var docOpt = kakaoLocalClient.searchFirst(req.getQuery());
         var doc = docOpt.orElseThrow(
-            () -> new AppException(ShopErrorCode.ADDRESS_NO_SUCH)
+            () -> new AppException(ShopErrorCode.ADDRESS_NOT_FOUND)
         );
 
         // 전체주소 & 좌표 추출
@@ -86,7 +86,10 @@ public class ShopAddressService {
         return AddressResponse.builder()
             .id(createAddress.getId())
             .fullAddress(createAddress.getFullAddress())
-
+            .region_1depth_name(createAddress.getRegion_1depth())
+            .region_2depth_name(createAddress.getRegion_2depth())
+            .region_3depth_name(createAddress.getRegion_3depth())
+            .h_code(createAddress.getH_code())
             .latitude(createAddress.getLatitude())
             .longitude(createAddress.getLongitude())
             .source("kakao")
