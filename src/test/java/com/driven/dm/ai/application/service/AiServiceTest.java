@@ -14,6 +14,7 @@ import static org.mockito.Mockito.when;
 import com.driven.dm.ai.domain.entity.AiCallLog;
 import com.driven.dm.ai.infrastructure.repository.AiCallLogRepository;
 import com.driven.dm.ai.presentation.dto.response.AiCallLogPageResponseDto;
+import com.driven.dm.ai.presentation.dto.response.AiCallLogResponseDto;
 import com.driven.dm.ai.presentation.dto.response.AiCallResponseDto;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.user.application.service.UserReader;
@@ -299,6 +300,70 @@ class AiServiceTest {
                 .searchByOutputTextWithPaging(content, 0L, 10L);
             verify(aiCallLogRepository, times(1))
                 .countAllActiveLogsByOutputText(content);
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+    }
+
+    @Nested
+    class GetAiCallLogDetail {
+
+        @Test
+        @DisplayName("단건 조회 성공: DTO 매핑이 올바르다")
+        void getAiCallLog_success() {
+
+            // [given]
+            UUID logId = UUID.randomUUID();
+            User owner = mock(User.class);
+            UUID ownerId = UUID.randomUUID();
+            when(owner.getId()).thenReturn(ownerId);
+
+            AiCallLog log = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "prompt-ok", "out-ok");
+            when(aiCallLogRepository.findById(eq(logId))).thenReturn(java.util.Optional.of(log));
+
+            // [when]
+            AiCallLogResponseDto dto = aiService.getAiCallLog(logId);
+
+            // [then]
+            assertThat(dto).isNotNull();
+            assertThat(dto.getOutputText()).isEqualTo("out-ok");
+            assertThat(dto.getCreatedBy()).isEqualTo(ownerId);
+
+            verify(aiCallLogRepository, times(1)).findById(logId);
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+
+        @Test
+        @DisplayName("단건 조회: 이미 삭제된 로그면 AI_LOG_ALREADY_DELETED 예외 발생")
+        void getAiCallLog_alreadyDeleted_throws_exception() {
+
+            // [given]
+            UUID logId = UUID.randomUUID();
+            User owner = mock(User.class);
+
+            AiCallLog log = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "prompt-del", "out-del");
+            log.delete(UUID.randomUUID());  // isDeleted = true
+
+            when(aiCallLogRepository.findById(eq(logId))).thenReturn(java.util.Optional.of(log));
+
+            // [when & then]
+            assertThrows(AppException.class, () -> aiService.getAiCallLog(logId));
+
+            verify(aiCallLogRepository, times(1)).findById(logId);
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+
+        @Test
+        @DisplayName("단건 조회: 존재하지 않으면 AI_LOG_NOT_FOUND 예외 발생")
+        void getAiCallLog_notFound_throws_exception() {
+
+            // [given]
+            UUID logId = UUID.randomUUID();
+            when(aiCallLogRepository.findById(eq(logId))).thenReturn(java.util.Optional.empty());
+
+            // [when & then]
+            assertThrows(AppException.class, () -> aiService.getAiCallLog(logId));
+
+            verify(aiCallLogRepository, times(1)).findById(logId);
             verifyNoMoreInteractions(aiCallLogRepository);
         }
     }
