@@ -95,7 +95,7 @@ class AiServiceTest {
         }
 
         @Test
-        @DisplayName("메뉴 설명 생성 예외 발생 시: fallback 문구로 저장된다")
+        @DisplayName("메뉴 설명 생성 실패: 예외 발생 시 fallback 문구로 저장된다")
         void generateMenuDescription_fallback_onException() {
 
             // [given]
@@ -134,7 +134,7 @@ class AiServiceTest {
     class getAiCallLog {
 
         @Test
-        @DisplayName("로그 목록 조회: 정상 페이징(page=2, size=10) → offset=10/limit=10으로 조회된다")
+        @DisplayName("로그 목록 조회 성공: 정상 페이징(page=2, size=10) → offset=10/limit=10으로 조회된다")
         void getAiCallLogList_success_paging() {
 
             // [given]
@@ -241,7 +241,7 @@ class AiServiceTest {
         }
 
         @Test
-        @DisplayName("검색: 키워드가 있으면 결과 목록 정상 반환된다(offset=(p-1)*s로 페이징 조회되고 count는 countAllActiveLogsByOutputText로 반환)")
+        @DisplayName("검색 성공: 키워드가 있으면 결과 목록 정상 반환된다(offset=(p-1)*s로 페이징 조회되고 count는 countAllActiveLogsByOutputText로 반환)")
         void search_with_keyword_success() {
 
             // [given]
@@ -279,7 +279,7 @@ class AiServiceTest {
         }
 
         @Test
-        @DisplayName("검색: 키워드 결과가 0건이면 AppException(AI_LOG_SEARCH_NOT_FOUND) 발생")
+        @DisplayName("검색 실패: 키워드 결과가 0건이면 AppException(AI_LOG_SEARCH_NOT_FOUND) 발생")
         void search_with_keyword_not_found() {
 
             // [given]
@@ -333,7 +333,7 @@ class AiServiceTest {
         }
 
         @Test
-        @DisplayName("단건 조회: 이미 삭제된 로그면 AI_LOG_ALREADY_DELETED 예외 발생")
+        @DisplayName("단건 조회 실패: 이미 삭제된 로그면 AI_LOG_ALREADY_DELETED 예외 발생")
         void getAiCallLog_alreadyDeleted_throws_exception() {
 
             // [given]
@@ -353,7 +353,7 @@ class AiServiceTest {
         }
 
         @Test
-        @DisplayName("단건 조회: 존재하지 않으면 AI_LOG_NOT_FOUND 예외 발생")
+        @DisplayName("단건 조회 실패: 로그가 존재하지 않으면 AI_LOG_NOT_FOUND 예외 발생")
         void getAiCallLog_notFound_throws_exception() {
 
             // [given]
@@ -362,6 +362,74 @@ class AiServiceTest {
 
             // [when & then]
             assertThrows(AppException.class, () -> aiService.getAiCallLog(logId));
+
+            verify(aiCallLogRepository, times(1)).findById(logId);
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+    }
+
+    @Nested
+    class DeleteAiCallLog {
+
+        @Test
+        @DisplayName("삭제 성공: 엔티티가 soft delete 된다")
+        void deleteAiCallLog_success() {
+
+            // [given]
+            UUID logId = UUID.randomUUID();
+            UUID deleterId = UUID.randomUUID();
+
+            User owner = mock(User.class);
+            AiCallLog log = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "prompt-del", "out-del");
+
+            when(aiCallLogRepository.findById(eq(logId))).thenReturn(java.util.Optional.of(log));
+
+            // [when]
+            aiService.deleteAiCallLog(logId, deleterId);
+
+            // [then]
+            assertThat(log.isDeleted()).isTrue();
+
+            verify(aiCallLogRepository, times(1)).findById(logId);
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+
+        @Test
+        @DisplayName("삭제 실패: 이미 삭제된 로그면 AI_LOG_ALREADY_DELETED 예외 발생")
+        void deleteAiCallLog_alreadyDeleted_throws_exception() {
+
+            // [given]
+            UUID logId = UUID.randomUUID();
+            UUID deleterId = UUID.randomUUID();
+
+            User owner = mock(User.class);
+            AiCallLog log = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "prompt-del", "out-del");
+            log.delete(UUID.randomUUID()); // 이미 삭제된 상태로 세팅
+
+            when(aiCallLogRepository.findById(eq(logId))).thenReturn(java.util.Optional.of(log));
+
+            // [when & then]
+            assertThrows(AppException.class, () -> aiService.deleteAiCallLog(logId, deleterId));
+
+            // 상태는 여전히 삭제 상태
+            assertThat(log.isDeleted()).isTrue();
+
+            verify(aiCallLogRepository, times(1)).findById(logId);
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+
+        @Test
+        @DisplayName("삭제 실패: 존재하지 않는 로그면 AI_LOG_NOT_FOUND 예외 발생")
+        void deleteAiCallLog_notFound_throws_exception() {
+
+            // [given]
+            UUID logId = UUID.randomUUID();
+            UUID deleterId = UUID.randomUUID();
+
+            when(aiCallLogRepository.findById(eq(logId))).thenReturn(java.util.Optional.empty());
+
+            // [when & then]
+            assertThrows(AppException.class, () -> aiService.deleteAiCallLog(logId, deleterId));
 
             verify(aiCallLogRepository, times(1)).findById(logId);
             verifyNoMoreInteractions(aiCallLogRepository);
