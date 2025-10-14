@@ -19,9 +19,7 @@ import com.driven.dm.shop.domain.repository.ShopRepository;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
-import com.driven.dm.user.domain.entity.UserStatus;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -37,6 +35,7 @@ public class MenuService {
     private final ShopRepository shopRepository;
     private final MenuRepository menuRepository;
 
+    @Transactional
     public MenuCreateResponse createMenu(UUID id, MenuCreateRequest menuCreateRequest) {
         Shop shop = getShop(id);
         Optional<User> user = userRepository.findById(shop.getOwner().getId());
@@ -75,6 +74,7 @@ public class MenuService {
             .toList();
     }
 
+    @Transactional
     public MenuUpdateResponse updateMenu(UUID id, SecurityUser securityUser,
         MenuUpdateRequest menuUpdateRequest) {
         User user = getUser(securityUser);
@@ -98,6 +98,7 @@ public class MenuService {
             .build();
     }
 
+    @Transactional
     public void deleteMenu(UUID id, SecurityUser securityUser) {
         Menu menu = getMenu(id);
         User user = getUser(securityUser);
@@ -110,6 +111,7 @@ public class MenuService {
         menuRepository.deleteMenu(menu);
     }
 
+    @Transactional(readOnly = true)
     public MenuShopResponse shopMenuList(UUID id, SecurityUser securityUser) {
 
         User user = getUser(securityUser);
