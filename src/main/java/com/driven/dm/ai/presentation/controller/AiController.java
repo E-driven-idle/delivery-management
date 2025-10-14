@@ -5,6 +5,7 @@ import com.driven.dm.ai.presentation.dto.response.AiCallLogPageResponseDto;
 import com.driven.dm.ai.presentation.dto.response.AiCallLogResponseDto;
 import com.driven.dm.ai.presentation.dto.response.AiCallResponseDto;
 import com.driven.dm.global.config.security.SecurityUser;
+import java.net.URI;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -45,7 +46,11 @@ public class AiController {
         @RequestParam String category,
         @RequestParam String features) {
 
-        return ResponseEntity.ok(aiService.generateMenuDescription(principal.getId(), menuName, category, features));
+        AiCallResponseDto response =
+            aiService.generateMenuDescription(principal.getId(), menuName, category, features);
+        URI location = URI.create("/api/v1/ai/logs/" + response.getId());
+
+        return ResponseEntity.created(location).body(response);
     }
 
     /**
