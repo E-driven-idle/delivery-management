@@ -1,6 +1,7 @@
 package com.driven.dm.ai.application.service;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.ArgumentMatchers.eq;
@@ -14,6 +15,7 @@ import com.driven.dm.ai.domain.entity.AiCallLog;
 import com.driven.dm.ai.infrastructure.repository.AiCallLogRepository;
 import com.driven.dm.ai.presentation.dto.response.AiCallLogPageResponseDto;
 import com.driven.dm.ai.presentation.dto.response.AiCallResponseDto;
+import com.driven.dm.global.exception.AppException;
 import com.driven.dm.user.application.service.UserReader;
 import com.driven.dm.user.domain.entity.User;
 import java.util.List;
@@ -167,7 +169,7 @@ class AiServiceTest {
         }
 
         @Test
-        @DisplayName("로그 목록 조회: 보정 로직(page=null, size=7 → page=1, size=10) → offset=0/limit=10")
+        @DisplayName("로그 목록 조회: 보정 로직 통한 페이징 정상화 검증(page=null, size=7 → page=1, size=10) → offset=0/limit=10")
         void getAiCallLogList_normalization_applied() {
 
             // [given]
@@ -196,6 +198,107 @@ class AiServiceTest {
 
             verify(aiCallLogRepository, times(1)).findLogsWithPaging(0L, 10L);
             verify(aiCallLogRepository, times(1)).countAllActiveLogs();
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+    }
+
+    @Nested
+    class SearchLogByContent {
+
+        @Test
+        @DisplayName("검색: 키워드가 null/blank 경우 getAiCallLogList 로직이 호출된다")
+        void search_blank_returns_all_list() {
+
+            // [given]
+            String content = "   ";
+            long page = 1L;
+            long pageSize = 10L;
+
+            User owner = mock(User.class);
+            UUID ownerId = UUID.randomUUID();
+            when(owner.getId()).thenReturn(ownerId);
+
+            AiCallLog log = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "p", "out");
+
+            when(aiCallLogRepository.findLogsWithPaging(eq(0L), eq(10L)))
+                .thenReturn(List.of(log));
+            when(aiCallLogRepository.countAllActiveLogs())
+                .thenReturn(1L);
+
+            // [when]
+            AiCallLogPageResponseDto result = aiService.searchLogByContent(content, page, pageSize);
+
+            // [then]
+            assertThat(result.count()).isEqualTo(1L);
+            assertThat(result.logList()).hasSize(1);
+            assertThat(result.logList().get(0).getOutputText()).isEqualTo("out");
+            assertThat(result.logList().get(0).getCreatedBy()).isEqualTo(ownerId);
+
+            verify(aiCallLogRepository, times(1)).findLogsWithPaging(0L, 10L);
+            verify(aiCallLogRepository, times(1)).countAllActiveLogs();
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+
+        @Test
+        @DisplayName("검색: 키워드가 있으면 결과 목록 정상 반환된다(offset=(p-1)*s로 페이징 조회되고 count는 countAllActiveLogsByOutputText로 반환)")
+        void search_with_keyword_success() {
+
+            // [given]
+            String content = "spicy";
+            long page = 3L;
+            long pageSize = 30L;
+            long offset = (page - 1) * pageSize;
+
+            User owner = mock(User.class);
+            UUID ownerId = UUID.randomUUID();
+            when(owner.getId()).thenReturn(ownerId);
+
+            AiCallLog log1 = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "p1", "out1 spicy good");
+            AiCallLog log2 = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "p2", "out2 very spicy");
+
+            when(aiCallLogRepository.searchByOutputTextWithPaging(eq(content), eq(offset), eq(pageSize)))
+                .thenReturn(List.of(log1, log2));
+            when(aiCallLogRepository.countAllActiveLogsByOutputText(eq(content)))
+                .thenReturn(2L);
+
+            // [when]
+            AiCallLogPageResponseDto result = aiService.searchLogByContent(content, page, pageSize);
+
+            // [then]
+            assertThat(result.count()).isEqualTo(2L);
+            assertThat(result.logList()).hasSize(2);
+            assertThat(result.logList().get(0).getOutputText()).contains("spicy");
+            assertThat(result.logList().get(0).getCreatedBy()).isEqualTo(ownerId);
+
+            verify(aiCallLogRepository, times(1))
+                .searchByOutputTextWithPaging(content, offset, pageSize);
+            verify(aiCallLogRepository, times(1))
+                .countAllActiveLogsByOutputText(content);
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+
+        @Test
+        @DisplayName("검색: 키워드 결과가 0건이면 AppException(AI_LOG_SEARCH_NOT_FOUND) 발생")
+        void search_with_keyword_not_found() {
+
+            // [given]
+            String content = "nohit";
+            long page = 1L;
+            long pageSize = 10L;
+
+            when(aiCallLogRepository.searchByOutputTextWithPaging(eq(content), eq(0L), eq(10L)))
+                .thenReturn(List.of());
+            when(aiCallLogRepository.countAllActiveLogsByOutputText(eq(content)))
+                .thenReturn(0L);
+
+            // [when & then]
+            assertThrows(AppException.class,
+                () -> aiService.searchLogByContent(content, page, pageSize));
+
+            verify(aiCallLogRepository, times(1))
+                .searchByOutputTextWithPaging(content, 0L, 10L);
+            verify(aiCallLogRepository, times(1))
+                .countAllActiveLogsByOutputText(content);
             verifyNoMoreInteractions(aiCallLogRepository);
         }
     }
