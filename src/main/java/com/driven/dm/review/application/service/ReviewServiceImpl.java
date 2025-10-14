@@ -6,7 +6,6 @@ import com.driven.dm.menu.infrastructure.repository.MenuJpaRepository;
 import com.driven.dm.review.application.exception.ReviewErrorCode;
 import com.driven.dm.review.domain.entity.Review;
 import com.driven.dm.review.domain.entity.ReviewImage;
-import com.driven.dm.review.infrastructure.repository.ReviewImageRepository;
 import com.driven.dm.review.infrastructure.repository.ReviewRepository;
 import com.driven.dm.review.presentation.dto.request.ReviewCreateRequest;
 import com.driven.dm.review.presentation.dto.request.ReviewUpdateRequest;
@@ -30,7 +29,6 @@ import org.springframework.transaction.annotation.Transactional;
 public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
-    private final ReviewImageRepository reviewImageRepository;
     private final UserRepository userRepository;
     private final ShopJpaRepository shopJpaRepository;
     private final MenuJpaRepository menuJpaRepository;
@@ -59,7 +57,6 @@ public class ReviewServiceImpl implements ReviewService {
             request.getShopId())
             : reviewRepository.existsByUser_IdAndShop_IdAndMenu_IdAndDeletedAtIsNull(userId,
                 request.getShopId(), request.getMenuId());
-
         if (exists) {
             throw new AppException(ReviewErrorCode.DUPLICATE_REVIEW);
         }
@@ -70,7 +67,7 @@ public class ReviewServiceImpl implements ReviewService {
             request.getImageUrls().forEach(url -> review.addImage(ReviewImage.of(url)));
         }
 
-        reviewRepository.save(review);
+        reviewRepository.saveAndFlush(review);
         return ReviewResponse.from(review);
     }
 
@@ -83,16 +80,16 @@ public class ReviewServiceImpl implements ReviewService {
 
     @Override
     public ReviewPageResponse getShopReviews(UUID shopId, Pageable pageable) {
-        Page<ReviewResponse> page = reviewRepository.findByShop_IdAndDeletedAtIsNull(shopId,
-                pageable)
+        Page<ReviewResponse> page = reviewRepository
+            .findByShop_IdAndDeletedAtIsNull(shopId, pageable)
             .map(ReviewResponse::from);
         return ReviewPageResponse.from(page);
     }
 
     @Override
     public ReviewPageResponse getUserReviews(UUID userId, Pageable pageable) {
-        Page<ReviewResponse> page = reviewRepository.findByUser_IdAndDeletedAtIsNull(userId,
-                pageable)
+        Page<ReviewResponse> page = reviewRepository
+            .findByUser_IdAndDeletedAtIsNull(userId, pageable)
             .map(ReviewResponse::from);
         return ReviewPageResponse.from(page);
     }
@@ -111,6 +108,13 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         review.update(request.getContent(), request.getRating());
+
+        if (request.getImageUrls() != null) {
+            review.getImages().forEach(img -> img.delete(userId));
+            request.getImageUrls().forEach(url -> review.addImage(ReviewImage.of(url)));
+        }
+
+        reviewRepository.saveAndFlush(review);
         return ReviewResponse.from(review);
     }
 
