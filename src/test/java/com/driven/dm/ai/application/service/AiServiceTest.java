@@ -3,19 +3,24 @@ package com.driven.dm.ai.application.service;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.verifyNoMoreInteractions;
 import static org.mockito.Mockito.when;
 
 import com.driven.dm.ai.domain.entity.AiCallLog;
 import com.driven.dm.ai.infrastructure.repository.AiCallLogRepository;
+import com.driven.dm.ai.presentation.dto.response.AiCallLogPageResponseDto;
 import com.driven.dm.ai.presentation.dto.response.AiCallResponseDto;
 import com.driven.dm.user.application.service.UserReader;
 import com.driven.dm.user.domain.entity.User;
+import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Answers;
@@ -41,77 +46,157 @@ class AiServiceTest {
     @InjectMocks
     private AiService aiService;
 
-    @BeforeEach
-    void setUp() {
+    @Nested
+    class generateMenuDescription {
 
-        when(aiCallLogRepository.save(any(AiCallLog.class)))
-            .thenAnswer((Answer<AiCallLog>) inv -> inv.getArgument(0, AiCallLog.class));
+        @BeforeEach
+        void setUp() {
+
+            when(aiCallLogRepository.save(any(AiCallLog.class)))
+                .thenAnswer((Answer<AiCallLog>) inv -> inv.getArgument(0, AiCallLog.class));
+        }
+
+        @Test
+        @DisplayName("메뉴 설명 생성 성공: LLM 응답을 그대로 사용하고 로그가 저장된다")
+        void generateMenuDescription_success() {
+
+            // [given]
+            UUID userId = UUID.randomUUID();
+            User owner = mock(User.class);
+            when(userReader.findActiveUser(userId))
+                .thenReturn(owner);
+
+            String menuName = "불고기덮밥";
+            String category = "한식";
+            String features = "불고기, 양파, 간장소스";
+            String outputText = "달큼한 간장 소스에 볶아낸 불고기를 따끈한 밥 위에 올린 메뉴입니다.";
+
+            when(chatClient.prompt().user(anyString()).call().content())
+                .thenReturn(outputText);
+
+            // [when]
+            AiCallResponseDto dto = aiService.generateMenuDescription(userId, menuName, category,
+                features);
+
+            // [then]
+            assertThat(dto).isNotNull();
+            assertThat(dto.getOutputText()).isEqualTo(outputText);
+
+            ArgumentCaptor<AiCallLog> captor = ArgumentCaptor.forClass(AiCallLog.class);
+            verify(aiCallLogRepository, times(1)).save(captor.capture());
+            AiCallLog saved = captor.getValue();
+
+            assertThat(saved.getUser()).isEqualTo(owner);
+            assertThat(saved.getPrompt()).contains(menuName).contains(category).contains(features);
+            assertThat(saved.getOutputText()).isEqualTo(outputText);
+        }
+
+        @Test
+        @DisplayName("메뉴 설명 생성 예외 발생 시: fallback 문구로 저장된다")
+        void generateMenuDescription_fallback_onException() {
+
+            // [given]
+            UUID userId = UUID.randomUUID();
+            User owner = mock(User.class);
+            when(userReader.findActiveUser(userId))
+                .thenReturn(owner);
+
+            String menuName = "크림파스타";
+            String category = "양식";
+            String features = "생크림, 파르미지아노";
+
+            when(chatClient.prompt().user(anyString()).call().content())
+                .thenThrow(new RuntimeException("OpenAI down"));
+
+            // [when]
+            AiCallResponseDto dto = aiService.generateMenuDescription(userId, menuName, category,
+                features);
+
+            // [then]
+            String expectedFallback = menuName + "은(는) 신선한 재료로 만든 담백한 맛이 특징입니다.";
+            assertThat(dto).isNotNull();
+            assertThat(dto.getOutputText()).isEqualTo(expectedFallback);
+
+            ArgumentCaptor<AiCallLog> captor = ArgumentCaptor.forClass(AiCallLog.class);
+            verify(aiCallLogRepository, times(1)).save(captor.capture());
+            AiCallLog saved = captor.getValue();
+
+            assertThat(saved.getUser()).isEqualTo(owner);
+            assertThat(saved.getPrompt()).contains(menuName).contains(category).contains(features);
+            assertThat(saved.getOutputText()).isEqualTo(expectedFallback);
+        }
     }
 
-    @Test
-    @DisplayName("메뉴 생성 성공: LLM 응답을 그대로 사용하고 로그가 저장된다")
-    void generateMenuDescription_success() {
+    @Nested
+    class getAiCallLog {
 
-        // [given]
-        UUID userId = UUID.randomUUID();
-        User owner = mock(User.class);
-        when(userReader.findActiveUser(userId)).thenReturn(owner);
+        @Test
+        @DisplayName("로그 목록 조회: 정상 페이징(page=2, size=10) → offset=10/limit=10으로 조회된다")
+        void getAiCallLogList_success_paging() {
 
-        String menuName = "불고기덮밥";
-        String category = "한식";
-        String features = "불고기, 양파, 간장소스";
-        String outputText = "달큼한 간장 소스에 볶아낸 불고기를 따끈한 밥 위에 올린 메뉴입니다.";
+            // [given]
+            long page = 2L;     // (p - 1) * s = 10
+            long pageSize = 10L;
 
-        when(chatClient.prompt().user(anyString()).call().content()).thenReturn(outputText);
+            User owner = mock(User.class);
+            UUID ownerId = UUID.randomUUID();
+            when(owner.getId()).thenReturn(ownerId);
 
-        // [when]
-        AiCallResponseDto dto = aiService.generateMenuDescription(userId, menuName, category,
-            features);
+            AiCallLog log1 = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "prompt-1", "output-1");
+            AiCallLog log2 = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "prompt-2", "output-2");
 
-        // [then]
-        assertThat(dto).isNotNull();
-        assertThat(dto.getOutputText()).isEqualTo(outputText);
+            when(aiCallLogRepository.findLogsWithPaging(eq(10L), eq(10L)))
+                .thenReturn(List.of(log1, log2));
+            when(aiCallLogRepository.countAllActiveLogs())
+                .thenReturn(25L);
 
-        ArgumentCaptor<AiCallLog> captor = ArgumentCaptor.forClass(AiCallLog.class);
-        verify(aiCallLogRepository, times(1)).save(captor.capture());
-        AiCallLog saved = captor.getValue();
+            // [when]
+            AiCallLogPageResponseDto result = aiService.getAiCallLogList(page, pageSize);
 
-        assertThat(saved.getUser()).isEqualTo(owner);
-        assertThat(saved.getPrompt()).contains(menuName).contains(category).contains(features);
-        assertThat(saved.getOutputText()).isEqualTo(outputText);
-    }
+            // [then]
+            assertThat(result).isNotNull();
+            assertThat(result.count()).isEqualTo(25L);
+            assertThat(result.logList()).hasSize(2);
+            assertThat(result.logList().get(0).getOutputText()).isEqualTo("output-1");
+            assertThat(result.logList().get(1).getOutputText()).isEqualTo("output-2");
+            assertThat(result.logList().get(0).getCreatedBy()).isEqualTo(ownerId);
 
-    @Test
-    @DisplayName("메뉴 생성 예외 발생 시 fallback 문구로 저장된다")
-    void generateMenuDescription_fallback_onException() {
+            verify(aiCallLogRepository, times(1)).findLogsWithPaging(10L, 10L);
+            verify(aiCallLogRepository, times(1)).countAllActiveLogs();
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
 
-        // [given]
-        UUID userId = UUID.randomUUID();
-        User owner = mock(User.class);
-        when(userReader.findActiveUser(userId)).thenReturn(owner);
+        @Test
+        @DisplayName("로그 목록 조회: 보정 로직(page=null, size=7 → page=1, size=10) → offset=0/limit=10")
+        void getAiCallLogList_normalization_applied() {
 
-        String menuName = "크림파스타";
-        String category = "양식";
-        String features = "생크림, 파르미지아노";
+            // [given]
+            Long page = null;    // normalizePage → 1
+            Long pageSize = 7L;  // 화이트리스트(10,30,50) 외 → normalizePageSize → 10
 
-        when(chatClient.prompt().user(anyString()).call().content())
-            .thenThrow(new RuntimeException("OpenAI down"));
+            User owner = mock(User.class);
+            UUID ownerId = UUID.randomUUID();
+            when(owner.getId()).thenReturn(ownerId);
 
-        // [when]
-        AiCallResponseDto dto = aiService.generateMenuDescription(userId, menuName, category,
-            features);
+            AiCallLog log = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "prompt-x", "output-x");
 
-        // [then]
-        String expectedFallback = menuName + "은(는) 신선한 재료로 만든 담백한 맛이 특징입니다.";
-        assertThat(dto).isNotNull();
-        assertThat(dto.getOutputText()).isEqualTo(expectedFallback);
+            when(aiCallLogRepository.findLogsWithPaging(eq(0L), eq(10L)))
+                .thenReturn(List.of(log));
+            when(aiCallLogRepository.countAllActiveLogs())
+                .thenReturn(1L);
 
-        ArgumentCaptor<AiCallLog> captor = ArgumentCaptor.forClass(AiCallLog.class);
-        verify(aiCallLogRepository, times(1)).save(captor.capture());
-        AiCallLog saved = captor.getValue();
+            // [when]
+            AiCallLogPageResponseDto result = aiService.getAiCallLogList(page, pageSize);
 
-        assertThat(saved.getUser()).isEqualTo(owner);
-        assertThat(saved.getPrompt()).contains(menuName).contains(category).contains(features);
-        assertThat(saved.getOutputText()).isEqualTo(expectedFallback);
+            // [then]
+            assertThat(result.count()).isEqualTo(1L);
+            assertThat(result.logList()).hasSize(1);
+            assertThat(result.logList().get(0).getOutputText()).isEqualTo("output-x");
+            assertThat(result.logList().get(0).getCreatedBy()).isEqualTo(ownerId);
+
+            verify(aiCallLogRepository, times(1)).findLogsWithPaging(0L, 10L);
+            verify(aiCallLogRepository, times(1)).countAllActiveLogs();
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
     }
 }
