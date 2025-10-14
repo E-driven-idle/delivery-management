@@ -62,9 +62,7 @@ public class UserAddressService {
     @Transactional
     public UserAddressResponse updateAddress(UUID userId, UUID addressId,
         UserAddressUpdateRequest request) {
-        UserAddress userAddress = userAddressRepository.findByIdAndUser_IdAndDeletedAtIsNull(
-                addressId, userId)
-            .orElseThrow(() -> AppException.of(UserErrorCode.USER_ADDRESS_NOT_FOUND));
+        UserAddress userAddress = getActiveAddressByIdAndUserOrThrow(addressId, userId);
 
         userAddress.updateAddress(
             request.zipCode(),
@@ -89,11 +87,14 @@ public class UserAddressService {
 
     @Transactional
     public UUID deleteAddress(UUID userId, UUID addressId) {
-        UserAddress userAddress = userAddressRepository.findByIdAndUser_IdAndDeletedAtIsNull(
-                addressId, userId)
-            .orElseThrow(() -> AppException.of(UserErrorCode.USER_ADDRESS_NOT_FOUND));
+        UserAddress userAddress = getActiveAddressByIdAndUserOrThrow(addressId, userId);
 
         userAddress.deactivate(userId);
         return userAddress.getId();
+    }
+
+    private UserAddress getActiveAddressByIdAndUserOrThrow(UUID addressId, UUID userId) {
+        return userAddressRepository.findByIdAndUser_IdAndDeletedAtIsNull(addressId, userId)
+            .orElseThrow(() -> AppException.of(UserErrorCode.USER_ADDRESS_NOT_FOUND));
     }
 }
