@@ -17,17 +17,20 @@ import com.driven.dm.user.domain.entity.UserAddress;
 import com.driven.dm.user.infrastructure.repository.UserAddressRepository;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import com.driven.dm.user.presentation.dto.request.UserAddressCreateRequest;
+import com.driven.dm.user.presentation.dto.request.UserAddressUpdateRequest;
 import com.driven.dm.user.presentation.dto.response.UserAddressResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
 class UserAddressServiceTest {
@@ -105,15 +108,12 @@ class UserAddressServiceTest {
     @DisplayName("주소를 조회한다")
     void shouldReturnList_whenAddressesExist() {
         UUID userId = UUID.randomUUID();
-        UserAddress address = UserAddress.createDefault(
-            mock(User.class),
-            Address.create("00000", "서울시 강남구", "우리집")
-        );
+        UserAddress address = UserAddress.createDefault(mock(User.class),
+            Address.create("00000", "서울시 강남구", "우리집"));
 
         given(
             userAddressRepository.findAllByUserIdAndDeletedAtIsNullOrderByIsDefaultDescCreatedAtDesc(
-                userId))
-            .willReturn(List.of(address));
+                userId)).willReturn(List.of(address));
 
         List<UserAddressResponse> result = userAddressService.getAddresses(userId);
 
@@ -132,13 +132,78 @@ class UserAddressServiceTest {
 
         given(
             userAddressRepository.findAllByUserIdAndDeletedAtIsNullOrderByIsDefaultDescCreatedAtDesc(
-                userId))
-            .willReturn(List.of());
+                userId)).willReturn(List.of()
+        );
 
         List<UserAddressResponse> result = userAddressService.getAddresses(userId);
 
         assertThat(result).isEmpty();
         then(userAddressRepository).should()
             .findAllByUserIdAndDeletedAtIsNullOrderByIsDefaultDescCreatedAtDesc(userId);
+    }
+
+    @Nested
+    class UpdateUserAddress {
+
+        UUID addressId = UUID.randomUUID();
+        UUID userId = UUID.randomUUID();
+        String newZipCode = "00000";
+        String newPrimaryAddress = "서울시 강남구";
+        String newDetailAddress = "우리집";
+
+        @Test
+        @DisplayName("유저가 주소 업데이트를 요청하면 변경한다")
+        void updateUserAddressTest() {
+            UserAddressUpdateRequest request = UserAddressUpdateRequest.builder()
+                .zipCode(newZipCode).primaryAddress(newPrimaryAddress)
+                .detailAddress(newDetailAddress).build();
+
+            UserAddress userAddress = UserAddress.createDefault(User.of("sejun", "1234", "sejunO"),
+                Address.create("00001", "서울특별시 동작구", "우리집2"));
+
+            given(userAddressRepository.findByIdAndUser_IdAndDeletedAtIsNull(addressId,
+                userId)).willReturn(Optional.of(userAddress));
+
+            UserAddressResponse result = userAddressService.updateAddress(userId, addressId,
+                request);
+
+            assertThat(result.zipCode()).isEqualTo(newZipCode);
+            assertThat(result.primaryAddress()).isEqualTo(newPrimaryAddress);
+            assertThat(result.detailAddress()).isEqualTo(newDetailAddress);
+
+            then(userAddressRepository).should(times(1))
+                .findByIdAndUser_IdAndDeletedAtIsNull(addressId, userId);
+            then(userAddressRepository).should(never()).clearDefaultByUserId(any());
+
+        }
+
+        @Test
+        @DisplayName("기본주소로 변경 요청 시 기본주소로 업데이트하고 다른 주소의 isDefault 를 해제한다.")
+        void updateDefault_andClearsOthers_whenDefaultRequested() {
+            UserAddressUpdateRequest request = UserAddressUpdateRequest.builder()
+                .zipCode(newZipCode).primaryAddress(newPrimaryAddress)
+                .detailAddress(newDetailAddress).isDefault(true).build();
+
+            UserAddress userAddress = UserAddress.createDefault(
+                User.of("sejun", "1234", "sejunO"),
+                Address.create("00001", "서울특별시 동작구", "우리집2")
+            );
+            ReflectionTestUtils.setField(userAddress, "isDefault", false);
+
+            given(userAddressRepository.findByIdAndUser_IdAndDeletedAtIsNull(addressId,
+                userId)).willReturn(Optional.of(userAddress));
+
+            UserAddressResponse result = userAddressService.updateAddress(userId, addressId,
+                request);
+
+            assertThat(result.zipCode()).isEqualTo(newZipCode);
+            assertThat(result.primaryAddress()).isEqualTo(newPrimaryAddress);
+            assertThat(result.detailAddress()).isEqualTo(newDetailAddress);
+            assertThat(result.isDefault()).isTrue();
+
+            then(userAddressRepository).should(times(1))
+                .findByIdAndUser_IdAndDeletedAtIsNull(addressId, userId);
+            then(userAddressRepository).should(times(1)).clearDefaultOfUserExcept(any(), any());
+        }
     }
 }
