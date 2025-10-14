@@ -48,4 +48,16 @@ public class UserAddress extends BaseEntity {
     public static UserAddress createDefault(User user, Address address) {
         return new UserAddress(user, address, true);
     }
+
+    public void updateAddress(String zipCode, String primaryAddress, String detailAddress) {
+        this.address = Address.create(zipCode, primaryAddress, detailAddress);
+    }
+
+    public void markAsDefault() {
+        this.isDefault = true;
+    }
+
+    public void deactivate(UUID deletedBy) {
+        super.delete(deletedBy);
+    }
 }
