@@ -15,7 +15,8 @@ import com.driven.dm.cart.presentation.dto.response.UserCartSummaryDto;
 import com.driven.dm.cart.presentation.dto.response.UserCartsResponse;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
-import com.driven.dm.menu.infrastructure.repository.MenuRepository;
+import com.driven.dm.menu.domain.repository.MenuRepository;
+import com.driven.dm.menu.infrastructure.repository.MenuJpaRepository;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.repository.ShopRepository;
@@ -58,7 +59,7 @@ public class CartService {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }
 
-        Menu menu = menuRepository.findById(req.getMenuId())
+        Menu menu = menuRepository.selectMenu(req.getMenuId())
             .orElseThrow(() -> new AppException(CartErrorCode.INVALID_MENU));
 
         Cart cart = cartRepository
@@ -66,7 +67,7 @@ public class CartService {
             .orElseGet(() -> cartRepository.save(Cart.of(user, shop)));
 
         Cart.MenuSnapshot snapshot =
-            new Cart.MenuSnapshot(menu, menu.getId(), menu.getName(), menu.getPrice());
+            new Cart.MenuSnapshot(menu, menu.getId(), menu.getMenuName(), menu.getMenuPrice());
 
         CartItem item = cart.addOrIncrease(snapshot, req.getQuantity());
 

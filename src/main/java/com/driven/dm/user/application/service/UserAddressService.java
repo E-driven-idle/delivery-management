@@ -8,6 +8,7 @@ import com.driven.dm.user.domain.entity.UserAddress;
 import com.driven.dm.user.infrastructure.repository.UserAddressRepository;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import com.driven.dm.user.presentation.dto.request.UserAddressCreateRequest;
+import com.driven.dm.user.presentation.dto.request.UserAddressUpdateRequest;
 import com.driven.dm.user.presentation.dto.response.UserAddressResponse;
 import java.util.List;
 import java.util.UUID;
@@ -58,10 +59,42 @@ public class UserAddressService {
             .toList();
     }
 
+    @Transactional
+    public UserAddressResponse updateAddress(UUID userId, UUID addressId,
+        UserAddressUpdateRequest request) {
+        UserAddress userAddress = getActiveAddressByIdAndUserOrThrow(addressId, userId);
+
+        userAddress.updateAddress(
+            request.zipCode(),
+            request.primaryAddress(),
+            request.detailAddress()
+        );
+
+        if (Boolean.TRUE.equals(request.isDefault()) && !userAddress.isDefault()) {
+            userAddress.markAsDefault();
+            userAddressRepository.clearDefaultOfUserExcept(userId, addressId);
+        }
+
+        return UserAddressResponse.from(userAddress);
+    }
+
     private void assertUserAddressLimitNotExceeded(UUID userId) {
         long count = userAddressRepository.countByUser_IdAndDeletedAtIsNull(userId);
         if (count >= MAX_USER_ADDRESS_COUNT) {
             throw new AppException(UserErrorCode.MAX_ADDRESS_REACHED);
         }
+    }
+
+    @Transactional
+    public UUID deleteAddress(UUID userId, UUID addressId) {
+        UserAddress userAddress = getActiveAddressByIdAndUserOrThrow(addressId, userId);
+
+        userAddress.deactivate(userId);
+        return userAddress.getId();
+    }
+
+    private UserAddress getActiveAddressByIdAndUserOrThrow(UUID addressId, UUID userId) {
+        return userAddressRepository.findByIdAndUser_IdAndDeletedAtIsNull(addressId, userId)
+            .orElseThrow(() -> AppException.of(UserErrorCode.USER_ADDRESS_NOT_FOUND));
     }
 }
