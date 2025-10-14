@@ -64,6 +64,7 @@ public class ShopService {
                 ShopListResponseDto shopListResponse = ShopListResponseDto.builder()
                     .shopName(openShop.getShopName())
                     .description(openShop.getDescription())
+                    .category(openShop.getCategory().toString())
                     .avgRating(openShop.getAvgRating())
                     .fullAddress(
                         openShop.getAddress() != null
@@ -97,6 +98,7 @@ public class ShopService {
         return  ShopResponseDto.builder()
             .shopName(shop.getShopName())
             .description(shop.getDescription())
+            .category(shop.getCategory())
             .avgRating(shop.getAvgRating())
             .shopStatus(shop.getStatus())
             .fullAddress(fullAddress)
@@ -112,6 +114,7 @@ public class ShopService {
             .map(shop -> ShopListResponseDto.builder()
                 .shopName(shop.getShopName())
                 .description(shop.getDescription())
+                .category(shop.getCategory().toString())
                 .avgRating(shop.getAvgRating())
                 .fullAddress(
                     shop.getAddress() != null
@@ -132,12 +135,13 @@ public class ShopService {
         }
 
         if (isOwner(user, shop)) {
-            shop.update(shopUpdateRequest.getShopName(), shopUpdateRequest.getDescription(), shopUpdateRequest.getStatus());
+            shop.update(shopUpdateRequest.getShopName(), shopUpdateRequest.getDescription(), shopUpdateRequest.getStatus(), shopUpdateRequest.getCategory());
             Shop updatedShop = shopRepository.updateShop(shop);
             return ShopUpdateResponse.builder()
                 .shopName(updatedShop.getShopName())
                 .description(updatedShop.getDescription())
                 .shopStatus(updatedShop.getStatus())
+                .category(updatedShop.getCategory())
                 .build();
         } else {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);

@@ -1,5 +1,6 @@
 package com.driven.dm.shop.presentation.dto.response;
 
+import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
 import lombok.Builder;
 import lombok.Getter;
@@ -13,6 +14,7 @@ public class ShopUpdateResponse {
 
     private String shopName;
     private String description;
+    private ShopCategory category;
     private ShopStatus shopStatus;
 
 }

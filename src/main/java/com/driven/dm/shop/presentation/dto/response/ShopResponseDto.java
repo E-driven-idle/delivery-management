@@ -2,6 +2,7 @@ package com.driven.dm.shop.presentation.dto.response;
 
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopAddress;
+import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
 import java.util.Optional;
 import java.util.UUID;
@@ -16,6 +17,8 @@ public class ShopResponseDto {
 
     private String description;
 
+    private ShopCategory category;
+
     private Double avgRating;
 
     private ShopStatus shopStatus;
@@ -27,6 +30,7 @@ public class ShopResponseDto {
         return ShopResponseDto.builder()
             .shopName(shop.getShopName())
             .description(shop.getDescription())
+            .category(shop.getCategory())
             .avgRating(shop.getAvgRating())
             .shopStatus(shop.getStatus())
             .fullAddress(

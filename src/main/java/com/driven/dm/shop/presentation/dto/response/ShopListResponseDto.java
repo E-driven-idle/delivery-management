@@ -11,6 +11,7 @@ public class ShopListResponseDto {
 
     private String shopName;
     private String description;
+    private String category;
     private double avgRating;
     private String fullAddress;
 

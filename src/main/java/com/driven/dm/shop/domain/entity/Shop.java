@@ -1,6 +1,7 @@
 package com.driven.dm.shop.domain.entity;
 
 import com.driven.dm.global.entity.BaseEntity;
+import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
@@ -59,7 +60,7 @@ public class Shop extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "shop_category")
-    private ShopCategory shopCategory;
+    private ShopCategory category;
 
     @OneToOne(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
     @JsonManagedReference
@@ -80,10 +81,11 @@ public class Shop extends BaseEntity {
         shop.description = shopCreateRequest.getDescription();
         shop.status = ShopStatus.CLOSED;
         shop.avgRating = 0.0;
+        shop.category = ShopCategory.NONE;
         return shop;
     }
 
-    public void update(String shopName, String description, String status){
+    public void update(String shopName, String description, String status, String category){
         this.shopName = shopName;
         this.description = description;
 
@@ -91,6 +93,10 @@ public class Shop extends BaseEntity {
             this.status = ShopStatus.OPEN;
         }else {
             this.status = ShopStatus.CLOSED;
+        }
+
+        if (category != null) {
+            changeCategory(category);
         }
     }
 
@@ -108,6 +114,15 @@ public class Shop extends BaseEntity {
 
     public void changeDescription(String description) {
         this.description = description;
+    }
+
+    public void changeCategory(String shopCategory) {
+
+        try {
+            this.category = ShopCategory.valueOf(shopCategory.toUpperCase());
+        } catch (AppException e){
+            this.category = ShopCategory.NONE;
+        }
     }
 
 }

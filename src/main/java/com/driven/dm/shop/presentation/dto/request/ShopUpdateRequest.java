@@ -22,4 +22,8 @@ public class ShopUpdateRequest {
     @NotBlank(message = "가게 상태는 필수입니다.")
     @Pattern(regexp = "OPEN|CLOSED", message = "가게 상태는 OPEN 또는 CLOSED만 가능합니다.")
     private String status;
+
+    @Pattern(regexp = "KOREAN|CHINESE|SNACK|CHICKEN|PIZZA",
+        message = "카테고리는 KOREAN, CHINESE, SNACK, CHICKEN, PIZZA만 가능합니다.")
+    private String category;
 }
