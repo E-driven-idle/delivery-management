@@ -435,4 +435,73 @@ class AiServiceTest {
             verifyNoMoreInteractions(aiCallLogRepository);
         }
     }
+
+    @Nested
+    class RestoreAiCallLog {
+
+        @Test
+        @DisplayName("복구 성공: 삭제 상태가 해제된다")
+        void restoreAiCallLog_success() {
+
+            // [given]
+            UUID logId = UUID.randomUUID();
+            UUID restorerId = UUID.randomUUID();
+
+            User owner = mock(User.class);
+            AiCallLog log = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "prompt-restore", "out");
+            log.delete(UUID.randomUUID());  // 삭제 상태로 만든다
+
+            when(aiCallLogRepository.findById(eq(logId))).thenReturn(java.util.Optional.of(log));
+
+            // [when]
+            aiService.restoreAiCallLog(logId, restorerId);
+
+            // [then]
+            assertThat(log.isDeleted()).isFalse();  // 삭제 상태 해제
+
+            verify(aiCallLogRepository, times(1)).findById(logId);
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+
+        @Test
+        @DisplayName("복구 실패: 아직 삭제되지 않은 로그면 AI_LOG_HAS_NOT_BEEN_DELETED 예외 발생")
+        void restoreAiCallLog_notDeleted_throws_exception() {
+
+            // [given]
+            UUID logId = UUID.randomUUID();
+            UUID restorerId = UUID.randomUUID();
+
+            User owner = mock(User.class);
+            AiCallLog log = AiCallLog.of(owner, "OpenAi", "gpt-4o-mini", "prompt", "out");
+
+            // 삭제 안 된 상태
+            when(aiCallLogRepository.findById(eq(logId))).thenReturn(java.util.Optional.of(log));
+
+            // [when & then]
+            assertThrows(AppException.class, () -> aiService.restoreAiCallLog(logId, restorerId));
+
+            // 여전히 삭제 아님
+            assertThat(log.isDeleted()).isFalse();
+
+            verify(aiCallLogRepository, times(1)).findById(logId);
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+
+        @Test
+        @DisplayName("복구 실패: 존재하지 않는 로그면 AI_LOG_NOT_FOUND 예외 발생")
+        void restoreAiCallLog_notFound_throws_exception() {
+
+            // [given]
+            UUID logId = UUID.randomUUID();
+            UUID restorerId = UUID.randomUUID();
+
+            when(aiCallLogRepository.findById(eq(logId))).thenReturn(java.util.Optional.empty());
+
+            // [when & then]
+            assertThrows(AppException.class, () -> aiService.restoreAiCallLog(logId, restorerId));
+
+            verify(aiCallLogRepository, times(1)).findById(logId);
+            verifyNoMoreInteractions(aiCallLogRepository);
+        }
+    }
 }
