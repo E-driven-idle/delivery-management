@@ -9,6 +9,7 @@ import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.never;
 import static org.mockito.internal.verification.VerificationModeFactory.times;
 
+import com.driven.dm.global.entity.Address;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
@@ -16,6 +17,8 @@ import com.driven.dm.user.domain.entity.UserAddress;
 import com.driven.dm.user.infrastructure.repository.UserAddressRepository;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import com.driven.dm.user.presentation.dto.request.UserAddressCreateRequest;
+import com.driven.dm.user.presentation.dto.response.UserAddressResponse;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.DisplayName;
@@ -46,8 +49,8 @@ class UserAddressServiceTest {
         String primaryAddress = "서울특별시 동작구";
         String detailAddress = "우리집";
 
-        UserAddressCreateRequest request = new UserAddressCreateRequest(zipCode,
-            primaryAddress, detailAddress);
+        UserAddressCreateRequest request = new UserAddressCreateRequest(zipCode, primaryAddress,
+            detailAddress);
 
         User mockUser = mock(User.class);
         given(mockUser.getId()).willReturn(userId);
@@ -82,8 +85,8 @@ class UserAddressServiceTest {
         String primaryAddress = "서울특별시 동작구";
         String detailAddress = "우리집";
 
-        UserAddressCreateRequest request = new UserAddressCreateRequest(zipCode,
-            primaryAddress, detailAddress);
+        UserAddressCreateRequest request = new UserAddressCreateRequest(zipCode, primaryAddress,
+            detailAddress);
 
         User mockUser = mock(User.class);
         given(userRepository.findById(userId)).willReturn(Optional.of(mockUser));
@@ -96,5 +99,46 @@ class UserAddressServiceTest {
             .hasMessage(UserErrorCode.MAX_ADDRESS_REACHED.getMessage());
 
         then(userAddressRepository).should(never()).save(any(UserAddress.class));
+    }
+
+    @Test
+    @DisplayName("주소를 조회한다")
+    void shouldReturnList_whenAddressesExist() {
+        UUID userId = UUID.randomUUID();
+        UserAddress address = UserAddress.createDefault(
+            mock(User.class),
+            Address.create("00000", "서울시 강남구", "우리집")
+        );
+
+        given(
+            userAddressRepository.findAllByUserIdAndDeletedAtIsNullOrderByIsDefaultDescCreatedAtDesc(
+                userId))
+            .willReturn(List.of(address));
+
+        List<UserAddressResponse> result = userAddressService.getAddresses(userId);
+
+        assertThat(result).hasSize(1);
+        assertThat(result.get(0).isDefault()).isTrue();
+        assertThat(result.get(0).primaryAddress()).isEqualTo("서울시 강남구");
+
+        then(userAddressRepository).should()
+            .findAllByUserIdAndDeletedAtIsNullOrderByIsDefaultDescCreatedAtDesc(userId);
+    }
+
+    @Test
+    @DisplayName("주소가 없으면 빈 리스트 반환한다")
+    void shouldReturnEmptyList_whenNoAddresses() {
+        UUID userId = UUID.randomUUID();
+
+        given(
+            userAddressRepository.findAllByUserIdAndDeletedAtIsNullOrderByIsDefaultDescCreatedAtDesc(
+                userId))
+            .willReturn(List.of());
+
+        List<UserAddressResponse> result = userAddressService.getAddresses(userId);
+
+        assertThat(result).isEmpty();
+        then(userAddressRepository).should()
+            .findAllByUserIdAndDeletedAtIsNullOrderByIsDefaultDescCreatedAtDesc(userId);
     }
 }
