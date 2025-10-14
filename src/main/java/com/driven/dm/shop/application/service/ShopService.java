@@ -6,6 +6,7 @@ import com.driven.dm.global.exception.AppException;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopAddress;
+import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
 import com.driven.dm.shop.domain.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
@@ -125,6 +126,25 @@ public class ShopService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<ShopListResponseDto> searchByCategory(ShopCategory category) {
+        List<Shop> shopList = shopRepository.findByCategoryAndStatusNot(category, ShopStatus.DELETED);
+
+        return shopList.stream()
+            .map(shop -> ShopListResponseDto.builder()
+                .shopName(shop.getShopName())
+                .description(shop.getDescription())
+                .category(shop.getCategory().toString())
+                .avgRating(shop.getAvgRating())
+                .fullAddress(
+                    shop.getAddress() != null
+                        ? shop.getAddress().getFullAddress()
+                        : null
+                )
+                .build())
+            .toList();
+    }
+
     @Transactional
     public ShopUpdateResponse updateShop(UUID id, SecurityUser securityUser, ShopUpdateRequest shopUpdateRequest) {
         Shop shop = getShop(id);
@@ -188,4 +208,5 @@ public class ShopService {
             return true;
         }
     }
+
 }

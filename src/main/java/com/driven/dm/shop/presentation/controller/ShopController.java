@@ -3,6 +3,7 @@ package com.driven.dm.shop.presentation.controller;
 import com.driven.dm.global.config.security.SecurityUser;
 import com.driven.dm.shop.application.service.ShopAddressService;
 import com.driven.dm.shop.application.service.ShopService;
+import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.presentation.dto.request.ShopAddressCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopAddressUpdateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
@@ -51,6 +52,14 @@ public class ShopController {
     public ResponseEntity<List<ShopListResponseDto>> searchByShopName (@RequestParam("shopName") String shopName) {
 
         List<ShopListResponseDto> shopListResponseDto = shopService.searchByShopName(shopName);
+        return ResponseEntity.ok().body(shopListResponseDto);
+    }
+
+    @GetMapping("/category")
+    public ResponseEntity<List<ShopListResponseDto>> searchByCategory(
+        @RequestParam("category")ShopCategory category
+    ) {
+        List<ShopListResponseDto> shopListResponseDto = shopService.searchByCategory(category);
         return ResponseEntity.ok().body(shopListResponseDto);
     }
 

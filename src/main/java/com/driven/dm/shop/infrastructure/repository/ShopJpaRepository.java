@@ -1,6 +1,7 @@
 package com.driven.dm.shop.infrastructure.repository;
 
 import com.driven.dm.shop.domain.entity.Shop;
+import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
 import java.util.List;
 import java.util.Optional;
@@ -20,5 +21,13 @@ public interface ShopJpaRepository extends JpaRepository<Shop, UUID> {
           AND s.status <> :status
           """)
     List<Shop> findByShopNameContainingAndStatusNot(@Param("shopName") String shopName, @Param("status") ShopStatus status);
+
+    @Query("""
+          SELECT s
+          FROM Shop s
+          WHERE s.category = :category
+          AND s.status <> :status
+          """)
+    List<Shop> findByCategoryAndStatusNot(ShopCategory category,  ShopStatus status);
 
 }

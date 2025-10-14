@@ -1,11 +1,9 @@
 package com.driven.dm.shop.infrastructure.repository;
 
-import com.driven.dm.global.exception.AppException;
-import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
+import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
 import com.driven.dm.shop.domain.repository.ShopRepository;
-import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
@@ -52,5 +50,11 @@ public class ShopRepositoryImpl implements ShopRepository {
     public List<Shop> findByShopNameContainingAndStatusNot(String shopName, ShopStatus status) {
 
         return shopJpaRepository.findByShopNameContainingAndStatusNot(shopName, status);
+    }
+
+    @Override
+    public List<Shop> findByCategoryAndStatusNot(ShopCategory category, ShopStatus status) {
+
+        return shopJpaRepository.findByCategoryAndStatusNot(category, status);
     }
 }
