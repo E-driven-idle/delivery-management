@@ -44,4 +44,9 @@ public class MenuRepositoryImpl implements MenuRepository {
 
         menuJpaRepository.save(menu);
     }
+
+    @Override
+    public List<Menu> findAllByIdInAndShopIdAndDeletedAtIsNull(List<UUID> menuIds, UUID shopId) {
+        return menuJpaRepository.findAllByIdInAndShopIdAndDeletedAtIsNull(menuIds, shopId);
+    }
 }
