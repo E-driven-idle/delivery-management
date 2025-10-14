@@ -99,7 +99,6 @@ public class Review extends BaseEntity {
         }
     }
 
-    // ✅ 반드시 이 메서드를 통해 추가 (FK 세팅)
     public void addImage(ReviewImage image) {
         image.setReview(this);
         this.images.add(image);
