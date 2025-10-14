@@ -2,8 +2,8 @@ package com.driven.dm.shop.domain.entity;
 
 import com.driven.dm.global.entity.BaseEntity;
 import com.driven.dm.menu.domain.entity.Menu;
-import com.driven.dm.shop.presentation.dto.request.ShopDto;
-import com.driven.dm.shop.presentation.dto.request.ShopUpdateDto;
+import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
+import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.user.domain.entity.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
@@ -57,6 +57,10 @@ public class Shop extends BaseEntity {
     @Column(name = "shop_status")
     private ShopStatus status;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "shop_category")
+    private ShopCategory shopCategory;
+
     @OneToOne(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
     @JsonManagedReference
     private ShopAddress address;
@@ -64,26 +68,26 @@ public class Shop extends BaseEntity {
     @OneToMany(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<Menu> menu = new ArrayList<>();
 
-    public static Shop of(ShopDto shopDto){
+    public static Shop of(ShopCreateRequest shopCreateRequest){
 
-        return of(null, shopDto);
+        return of(null, shopCreateRequest);
     }
 
-    public static Shop of(User user,ShopDto shopDto){
+    public static Shop of(User user, ShopCreateRequest shopCreateRequest){
         Shop shop = new Shop();
         shop.owner = user;
-        shop.shopName = shopDto.getShopname();
-        shop.description = shopDto.getDescription();
+        shop.shopName = shopCreateRequest.getShopName();
+        shop.description = shopCreateRequest.getDescription();
         shop.status = ShopStatus.CLOSED;
         shop.avgRating = 0.0;
         return shop;
     }
 
-    public void update(ShopUpdateDto shopUpdateDto){
-        this.shopName = shopUpdateDto.getShopname();
-        this.description = shopUpdateDto.getDescription();
+    public void update(String shopName, String description, String status){
+        this.shopName = shopName;
+        this.description = description;
 
-        if(shopUpdateDto.getShopstatus().equals("OPEN")){
+        if(status.equals("OPEN")){
             this.status = ShopStatus.OPEN;
         }else {
             this.status = ShopStatus.CLOSED;
@@ -97,4 +101,13 @@ public class Shop extends BaseEntity {
 
         return this;
     }
+
+    public void changeName(String shopName) {
+        this.shopName = shopName;
+    }
+
+    public void changeDescription(String description) {
+        this.description = description;
+    }
+
 }

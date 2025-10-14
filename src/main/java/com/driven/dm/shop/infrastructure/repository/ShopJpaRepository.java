@@ -1,6 +1,8 @@
 package com.driven.dm.shop.infrastructure.repository;
 
 import com.driven.dm.shop.domain.entity.Shop;
+import com.driven.dm.shop.domain.entity.ShopStatus;
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -11,5 +13,12 @@ public interface ShopJpaRepository extends JpaRepository<Shop, UUID> {
 
     @Query("SELECT s FROM Shop s JOIN FETCH s.menu WHERE s.id = :shopId")
     Optional<Shop> findByIdWithMenus(@Param("shopId") UUID id);
+
+    @Query("""
+          SELECT s FROM Shop s
+          WHERE LOWER(s.shopName) LIKE LOWER(CONCAT('%', :shopName, '%'))
+          AND s.status <> :status
+          """)
+    List<Shop> findByShopNameContainingAndStatusNot(@Param("shopName") String shopName, @Param("status") ShopStatus status);
 
 }

@@ -48,7 +48,7 @@ public class MenuController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<MenuShopResponse> getMenu(
+    public ResponseEntity<MenuShopResponse> shopMenuList(
         @PathVariable UUID id,
         @AuthenticationPrincipal SecurityUser securityUser
     ) {

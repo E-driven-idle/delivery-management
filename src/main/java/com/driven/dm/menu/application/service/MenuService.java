@@ -21,7 +21,6 @@ import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,9 +37,11 @@ public class MenuService {
     @Transactional
     public MenuCreateResponse createMenu(UUID id, MenuCreateRequest menuCreateRequest) {
         Shop shop = getShop(id);
-        Optional<User> user = userRepository.findById(shop.getOwner().getId());
+        User user = userRepository.findById(shop.getOwner().getId()).orElseThrow(
+            () -> new AppException(UserErrorCode.USER_NOT_FOUND)
+        );
 
-        if (isOwner(user.get(), shop)) {
+        if (isOwner(user, shop)) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 
@@ -152,7 +153,10 @@ public class MenuService {
     }
 
     private Shop getShop(UUID id) {
-        Shop shop = shopRepository.selectShop(id);
+        Shop shop = shopRepository.selectShop(id).orElseThrow(
+            () -> new AppException(ShopErrorCode.SHOP_NOT_FOUND)
+        );
+
         if (shop == null) {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }
