@@ -60,7 +60,7 @@ public class Review extends BaseEntity {
     @Column(name = "rating", nullable = false)
     private Integer rating;
 
-    @OneToMany(mappedBy = "review", cascade = CascadeType.PERSIST, orphanRemoval = true)
+    @OneToMany(mappedBy = "review", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<ReviewImage> images = new ArrayList<>();
 
     public static Review create(User user, Shop shop, Menu menu, String content, Integer rating) {
@@ -99,6 +99,7 @@ public class Review extends BaseEntity {
         }
     }
 
+    // ✅ 반드시 이 메서드를 통해 추가 (FK 세팅)
     public void addImage(ReviewImage image) {
         image.setReview(this);
         this.images.add(image);
