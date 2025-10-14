@@ -16,4 +16,6 @@ public interface MenuRepository {
     Optional<Menu> selectMenu(UUID id);
 
     void deleteMenu(Menu menu);
+
+    List<Menu> findAllByIdInAndShopIdAndDeletedAtIsNull(List<UUID> menuIds, UUID shopId);
 }
