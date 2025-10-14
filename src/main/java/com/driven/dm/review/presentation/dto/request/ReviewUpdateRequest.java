@@ -1,7 +1,6 @@
 package com.driven.dm.review.presentation.dto.request;
 
 import jakarta.validation.constraints.*;
-import java.util.List;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
@@ -15,6 +14,4 @@ public class ReviewUpdateRequest {
     @Min(value = 1, message = "rating은 1 이상이어야 합니다.")
     @Max(value = 5, message = "rating은 5 이하여야 합니다.")
     private Integer rating;
-
-    private List<@NotBlank String> imageUrls;
 }
