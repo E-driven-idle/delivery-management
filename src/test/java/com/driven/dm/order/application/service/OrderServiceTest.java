@@ -37,7 +37,7 @@ import org.springframework.test.util.ReflectionTestUtils;
 class OrderServiceTest {
 
     @InjectMocks
-    OrderService orderservice;
+    OrderService orderService;
 
     @Mock
     OrderRepository orderRepository;
@@ -101,7 +101,7 @@ class OrderServiceTest {
             ArgumentCaptor<Order> order = ArgumentCaptor.forClass(Order.class);
             given(orderRepository.save(order.capture())).willReturn(mockOrder);
 
-            UUID result = orderservice.createOrder(request);
+            UUID result = orderService.createOrder(request);
             Order savedOrder = order.getValue();
 
             assertThat(savedOrder.getId()).isEqualTo(result);
@@ -123,7 +123,7 @@ class OrderServiceTest {
             given(shopRepository.selectShop(shopId)).willReturn(mockShop);
 
             assertThatThrownBy(() -> {
-                orderservice.createOrder(request);
+                orderService.createOrder(request);
             }).isInstanceOf(AppException.class).hasMessage(OrderErrorCode.SHOP_CLOSED.getMessage());
         }
 
@@ -140,7 +140,7 @@ class OrderServiceTest {
                 shopId)).willReturn(List.of());
 
             assertThatThrownBy(() -> {
-                orderservice.createOrder(request);
+                orderService.createOrder(request);
             }).isInstanceOf(AppException.class)
                 .hasMessage(OrderErrorCode.INVALID_MENU.getMessage());
         }
@@ -167,7 +167,7 @@ class OrderServiceTest {
                 shopId)).willReturn(List.of(menu));
 
             assertThatThrownBy(() -> {
-                orderservice.createOrder(request);
+                orderService.createOrder(request);
             }).isInstanceOf(AppException.class)
                 .hasMessage(OrderErrorCode.INVALID_QUANTITY.getMessage());
         }
