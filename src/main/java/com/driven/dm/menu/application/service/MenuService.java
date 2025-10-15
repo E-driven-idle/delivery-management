@@ -15,6 +15,7 @@ import com.driven.dm.menu.presentation.dto.response.MenuShopResponse.MenuRespons
 import com.driven.dm.menu.presentation.dto.response.MenuUpdateResponse;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
+import com.driven.dm.shop.domain.entity.ShopStatus;
 import com.driven.dm.shop.domain.repository.ShopRepository;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
@@ -41,12 +42,12 @@ public class MenuService {
             () -> new AppException(UserErrorCode.USER_NOT_FOUND)
         );
 
-        if (isOwner(user, shop)) {
+        if (!isOwner(user, shop)) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 
-        Menu menu = Menu.of(shop, menuCreateRequest.getMenuname(),
-            menuCreateRequest.getMenuprice());
+        Menu menu = Menu.of(shop, menuCreateRequest.getMenuname(), menuCreateRequest.getMenuprice());
+
         Menu saveMenu = menuRepository.createMenu(menu).orElseThrow(
             () -> new AppException(MenuErrorCode.MENU_SAVE_FAIL)
         );
@@ -76,12 +77,16 @@ public class MenuService {
     }
 
     @Transactional
-    public MenuUpdateResponse updateMenu(UUID id, SecurityUser securityUser,
-        MenuUpdateRequest menuUpdateRequest) {
+    public MenuUpdateResponse updateMenu(UUID id, SecurityUser securityUser, MenuUpdateRequest menuUpdateRequest) {
+
         User user = getUser(securityUser);
         Menu menu = menuRepository.selectMenu(id).orElseThrow(
             () -> new AppException(MenuErrorCode.MENU_NOT_FOUND)
         );
+
+        if (menu.getStatus().equals(MenuStatus.DELETED)) {
+            throw new AppException(MenuErrorCode.MENU_NOT_FOUND);
+        }
 
         if (!isOwner(user, menu.getShop())) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
@@ -104,6 +109,10 @@ public class MenuService {
         Menu menu = getMenu(id);
         User user = getUser(securityUser);
 
+        if (menu.getStatus().equals(MenuStatus.DELETED)) {
+            throw new AppException(MenuErrorCode.MENU_NOT_FOUND);
+        }
+
         if (!isOwner(user, menu.getShop())) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
@@ -119,6 +128,10 @@ public class MenuService {
         Shop shop = shopRepository.findByIdWithMenus(id).orElseThrow(
             () -> new AppException(ShopErrorCode.SHOP_NOT_FOUND)
         );
+
+        if (shop.getStatus().equals(ShopStatus.DELETED)) {
+            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
+        }
 
         boolean isPrivileged =
             isOwner(user, shop)
