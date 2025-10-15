@@ -103,6 +103,17 @@ public class MenuService {
             .toList();
     }
 
+    @Transactional(readOnly = true)
+    public List<MenuListResponse> searchByMenuName(String menuName) {
+
+        String query = menuName.isEmpty() ? "" : menuName.trim();
+        List<Menu> menuList = menuRepository.findByMenuNameContainingAndStatusNot(query, MenuStatus.DELETED);
+
+        return menuList.stream()
+            .map(MenuListResponse::from)
+            .toList();
+    }
+
     @Transactional
     public MenuUpdateResponse updateMenu(UUID id, SecurityUser securityUser,
         MenuUpdateRequest menuUpdateRequest) {
@@ -164,6 +175,7 @@ public class MenuService {
         menu.deleteMenu();
         menuRepository.save(menu);
     }
+
 
     @Transactional(readOnly = true)
     public MenuShopResponse shopMenuList(UUID shop_id, SecurityUser securityUser) {

@@ -22,6 +22,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 
 @RestController
@@ -59,6 +60,14 @@ public class MenuController {
         MenuShopResponse menuShopResponse = menuService.shopMenuList(id, securityUser);
 
         return ResponseEntity.ok().body(menuShopResponse);
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity<List<MenuListResponse>> searchByMenuName(
+        @RequestParam("menuName") String menuName)
+    {
+        List<MenuListResponse> menuListResponses = menuService.searchByMenuName(menuName);
+        return ResponseEntity.ok().body(menuListResponses);
     }
 
     @PutMapping("/{id}")
