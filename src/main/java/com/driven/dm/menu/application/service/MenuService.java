@@ -23,9 +23,15 @@ import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
+import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -86,32 +92,38 @@ public class MenuService {
     }
 
     @Transactional(readOnly = true)
-    public List<MenuListResponse> menuList(SecurityUser securityUser) {
+    public Page<MenuListResponse> menuList(SecurityUser securityUser, int page, int size, Sort.Direction direction) {
 
-        List<Menu> menus = menuRepository.findAll();
+        int safePage = Math.max(0, page);
+        int safeSize = (size <= 0) ? 10 : size;
+        Sort.Direction safeDir = (direction == null) ? Sort.Direction.DESC : direction;
+
+        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(safeDir, "createdAt"));
 
         boolean isPrivileged =
             securityUser.getRole().equals(UserRole.MASTER)
                 || securityUser.getRole().equals(UserRole.MANAGER);
 
-        return menus.stream()
-            .filter(menu ->
-                isPrivileged ? (menu.getStatus().equals(MenuStatus.ACTIVE) || menu.getStatus()
-                    .equals(MenuStatus.HIDDEN))
-                    : menu.getStatus().equals(MenuStatus.ACTIVE))
-            .map(MenuListResponse::from)
-            .toList();
+        Set<MenuStatus> statuses = isPrivileged
+            ? EnumSet.of(MenuStatus.ACTIVE, MenuStatus.HIDDEN)
+            : EnumSet.of(MenuStatus.ACTIVE);
+
+        return menuRepository.findByStatusIn(statuses, pageable)
+            .map(MenuListResponse::from);
     }
 
     @Transactional(readOnly = true)
-    public List<MenuListResponse> searchByMenuName(String menuName) {
+    public Page<MenuListResponse> searchByMenuName(String menuName, int page, int size, Sort.Direction direction) {
+        int safePage = Math.max(0, page);
+        int safeSize = (size <= 0) ? 10 : size;
+        Sort.Direction safeDir = (direction == null) ?  Sort.Direction.ASC : direction;
+
+        PageRequest pageable = PageRequest.of(safePage, safeSize, Sort.by(safeDir, "createdAt"));
 
         String query = menuName.isEmpty() ? "" : menuName.trim();
-        List<Menu> menuList = menuRepository.findByMenuNameContainingAndStatusNot(query, MenuStatus.DELETED);
+        Page<Menu> menuListPage = menuRepository.findByMenuNameContainingAndStatusNot(query, MenuStatus.DELETED, pageable);
 
-        return menuList.stream()
-            .map(MenuListResponse::from)
-            .toList();
+        return menuListPage.map(MenuListResponse::from);
     }
 
     @Transactional
