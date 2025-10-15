@@ -6,15 +6,14 @@ import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopAddress;
 import com.driven.dm.shop.domain.entity.ShopStatus;
-import com.driven.dm.shop.domain.repository.ShopAddressRepository;
-import com.driven.dm.shop.domain.repository.ShopRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopAddressJpaRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopAddressCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopAddressUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.ShopAddressResponse;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
-import com.driven.dm.user.domain.entity.UserStatus;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -28,7 +27,7 @@ public class ShopAddressService {
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
     private final KakaoLocalClient kakaoLocalClient;
-    private final ShopAddressRepository shopAddressRepository;
+    private final ShopAddressJpaRepository shopAddressRepository;
 
     @Transactional
     public ShopAddressResponse createAddress(UUID id, SecurityUser securityUser , ShopAddressCreateRequest req) {
@@ -83,7 +82,7 @@ public class ShopAddressService {
         }
 
         ShopAddress shopAddress = ShopAddress.of(shop, fullAddress, latitude, longitude, region_1depth_name, region_2depth_name, region_3depth_name, h_code);
-        ShopAddress createAddress = shopAddressRepository.createShopAddress(shopAddress);
+        ShopAddress createAddress = shopAddressRepository.save(shopAddress);
 
         return ShopAddressResponse.builder()
             .fullAddress(createAddress.getFullAddress())
@@ -111,7 +110,7 @@ public class ShopAddressService {
             throw new  AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 
-        ShopAddress shopAddress = shopAddressRepository.selectAddress(shop.getId()).orElseThrow(
+        ShopAddress shopAddress = shopAddressRepository.findByShopId(shop.getId()).orElseThrow(
             () -> new AppException(ShopErrorCode.ADDRESS_NOT_FOUND)
         );
 
@@ -170,12 +169,12 @@ public class ShopAddressService {
 
         ShopAddress shopAddress = getShopAddress(shop);
         shopAddress.deleteAddress();
-        shopAddressRepository.deleteAddress(shopAddress);
+        shopAddressRepository.save(shopAddress);
     }
 
     private Shop getShop(UUID id) {
 
-        return shopRepository.selectShop(id).orElseThrow(
+        return shopRepository.findById(id).orElseThrow(
             () -> new AppException(ShopErrorCode.SHOP_NOT_FOUND)
         );
     }
@@ -189,7 +188,7 @@ public class ShopAddressService {
 
     private ShopAddress getShopAddress(Shop shop) {
 
-        return shopAddressRepository.selectAddress(shop.getId()).orElseThrow(
+        return shopAddressRepository.findByShopId(shop.getId()).orElseThrow(
             () -> new AppException(ShopErrorCode.ADDRESS_NOT_FOUND)
         );
     }

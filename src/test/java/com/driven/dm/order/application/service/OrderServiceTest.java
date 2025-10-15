@@ -17,8 +17,7 @@ import com.driven.dm.order.presentation.dto.request.OrderCreateRequest;
 import com.driven.dm.order.presentation.dto.request.OrderMenuCreateRequest;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopStatus;
-import com.driven.dm.shop.domain.repository.ShopRepository;
-import com.driven.dm.shop.infrastructure.repository.ShopJpaRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.user.application.service.UserReader;
 import com.driven.dm.user.domain.entity.User;
 import java.util.List;
@@ -49,7 +48,7 @@ class OrderServiceTest {
     MenuRepository menuRepository;
 
     @Mock
-    ShopJpaRepository shopRepository;
+    ShopRepository shopRepository;
 
     @Mock
     UserReader userReader;
