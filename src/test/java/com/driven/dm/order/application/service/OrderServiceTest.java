@@ -33,6 +33,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -52,6 +53,9 @@ class OrderServiceTest {
 
     @Mock
     UserReader userReader;
+
+    @Mock
+    ApplicationEventPublisher eventPublisher;
 
     @Nested
     class createOrder {
@@ -94,7 +98,11 @@ class OrderServiceTest {
             given(mockShop.getId()).willReturn(shopId);
             given(mockShop.getStatus()).willReturn(ShopStatus.OPEN);
 
+<<<<<<< Updated upstream
             given(shopRepository.findById(shopId)).willReturn(Optional.of((mockShop)));
+=======
+            given(shopRepository.selectShop(shopId)).willReturn(Optional.of(mockShop));
+>>>>>>> Stashed changes
             given(menuRepository.findAllByIdInAndShopIdAndDeletedAtIsNull(
                 request.orderMenus().stream().map(OrderMenuCreateRequest::menuId).toList(),
                 shopId)).willReturn(List.of(menu));
@@ -122,7 +130,11 @@ class OrderServiceTest {
             Shop mockShop = mock(Shop.class);
             given(mockShop.getStatus()).willReturn(ShopStatus.CLOSED);
 
+<<<<<<< Updated upstream
             given(shopRepository.findById(shopId)).willReturn(Optional.of(mockShop));
+=======
+            given(shopRepository.selectShop(shopId)).willReturn(Optional.of(mockShop));
+>>>>>>> Stashed changes
 
             assertThatThrownBy(() -> {
                 orderService.createOrder(request);
@@ -136,7 +148,11 @@ class OrderServiceTest {
             given(mockShop.getId()).willReturn(shopId);
             given(mockShop.getStatus()).willReturn(ShopStatus.OPEN);
 
+<<<<<<< Updated upstream
             given(shopRepository.findById(shopId)).willReturn(Optional.of(mockShop));
+=======
+            given(shopRepository.selectShop(shopId)).willReturn(Optional.of(mockShop));
+>>>>>>> Stashed changes
             given(menuRepository.findAllByIdInAndShopIdAndDeletedAtIsNull(
                 request.orderMenus().stream().map(OrderMenuCreateRequest::menuId).toList(),
                 shopId)).willReturn(List.of());
@@ -163,7 +179,11 @@ class OrderServiceTest {
 
             given(mockShop.getId()).willReturn(shopId);
             given(mockShop.getStatus()).willReturn(ShopStatus.OPEN);
+<<<<<<< Updated upstream
             given(shopRepository.findById(shopId)).willReturn(Optional.of(mockShop));
+=======
+            given(shopRepository.selectShop(shopId)).willReturn(Optional.of(mockShop));
+>>>>>>> Stashed changes
             given(menuRepository.findAllByIdInAndShopIdAndDeletedAtIsNull(
                 request.orderMenus().stream().map(OrderMenuCreateRequest::menuId).toList(),
                 shopId)).willReturn(List.of(menu));
