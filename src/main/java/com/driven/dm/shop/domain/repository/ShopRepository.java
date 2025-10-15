@@ -2,6 +2,7 @@ package com.driven.dm.shop.domain.repository;
 
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.shop.domain.entity.Shop;
+import com.driven.dm.shop.domain.entity.ShopAddress;
 import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
@@ -24,4 +25,5 @@ public interface ShopRepository {
     List<Shop> findByShopNameContainingAndStatusNot(String shopName, ShopStatus status);
 
     List<Shop> findByCategoryAndStatusNot(ShopCategory category, ShopStatus status);
+
 }
