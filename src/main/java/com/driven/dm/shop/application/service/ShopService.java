@@ -8,7 +8,7 @@ import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopAddress;
 import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
-import com.driven.dm.shop.domain.repository.ShopRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
@@ -43,7 +43,7 @@ public class ShopService {
 
         if (isOwner) {
             Shop shop = Shop.of(user, shopCreateRequest);
-            Shop createdShop = shopRepository.createShop(shop);
+            Shop createdShop = shopRepository.save(shop);
             return ShopCreateResponse.builder()
                 .shopName(createdShop.getShopName())
                 .shopDescription(createdShop.getDescription())
@@ -57,7 +57,7 @@ public class ShopService {
     @Transactional(readOnly = true)
     public List<ShopListResponse> shopList() {
 
-        List<Shop> shopList = shopRepository.getShopList();
+        List<Shop> shopList = shopRepository.findAll();
         List<ShopListResponse> shopListResponseRequest = new ArrayList<>();
 
         for (Shop openShop : shopList) {
@@ -152,7 +152,7 @@ public class ShopService {
 
         if (isOwner(user, shop)) {
             shop.update(shopUpdateRequest.getShopName(), shopUpdateRequest.getDescription(), shopUpdateRequest.getStatus(), shopUpdateRequest.getCategory());
-            Shop updatedShop = shopRepository.updateShop(shop);
+            Shop updatedShop = shopRepository.save(shop);
             return ShopUpdateResponse.builder()
                 .shopName(updatedShop.getShopName())
                 .description(updatedShop.getDescription())
@@ -176,7 +176,7 @@ public class ShopService {
 
         if (privileges) {
             Shop deleteShop = shop.deleteShop(user.getId());
-            shopRepository.updateShop(deleteShop);
+            shopRepository.save(deleteShop);
         } else {
             throw new AppException(ApiErrorCode.FORBIDDEN);
         }
@@ -190,7 +190,7 @@ public class ShopService {
 
     private Shop getShop(UUID shopId) {
 
-        return shopRepository.selectShop(shopId).orElseThrow(
+        return shopRepository.findById(shopId).orElseThrow(
             () -> new AppException(ShopErrorCode.SHOP_NOT_FOUND)
         );
     }

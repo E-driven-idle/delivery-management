@@ -18,7 +18,7 @@ import com.driven.dm.order.presentation.dto.response.OrderResponse;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopStatus;
-import com.driven.dm.shop.domain.repository.ShopRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.user.application.service.UserReader;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.presentation.dto.ApiUser;
@@ -139,7 +139,7 @@ public class OrderService {
     }
 
     private Shop getOpenedShop(UUID shopId) {
-        Shop shop = shopRepository.selectShop(shopId).orElseThrow(() -> {
+        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> {
                 throw AppException.of(ShopErrorCode.SHOP_NOT_FOUND);
             });
         if (shop.getStatus() != ShopStatus.OPEN) {

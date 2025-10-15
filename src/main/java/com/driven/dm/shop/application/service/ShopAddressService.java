@@ -7,14 +7,13 @@ import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopAddress;
 import com.driven.dm.shop.domain.entity.ShopStatus;
 import com.driven.dm.shop.domain.repository.ShopAddressRepository;
-import com.driven.dm.shop.domain.repository.ShopRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopAddressCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopAddressUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.ShopAddressResponse;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
-import com.driven.dm.user.domain.entity.UserStatus;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -175,7 +174,7 @@ public class ShopAddressService {
 
     private Shop getShop(UUID id) {
 
-        return shopRepository.selectShop(id).orElseThrow(
+        return shopRepository.findById(id).orElseThrow(
             () -> new AppException(ShopErrorCode.SHOP_NOT_FOUND)
         );
     }

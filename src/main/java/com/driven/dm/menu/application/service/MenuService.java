@@ -18,7 +18,7 @@ import com.driven.dm.menu.presentation.dto.response.MenuUpdateResponse;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopStatus;
-import com.driven.dm.shop.infrastructure.repository.ShopJpaRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
@@ -34,7 +34,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class MenuService {
 
     private final UserRepository userRepository;
-    private final ShopJpaRepository shopRepository;
+    private final ShopRepository shopRepository;
     private final MenuRepository menuRepository;
     private final AiService aiService;
 

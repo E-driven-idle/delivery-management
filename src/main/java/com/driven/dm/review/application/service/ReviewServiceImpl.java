@@ -12,7 +12,7 @@ import com.driven.dm.review.presentation.dto.request.ReviewUpdateRequest;
 import com.driven.dm.review.presentation.dto.response.ReviewPageResponse;
 import com.driven.dm.review.presentation.dto.response.ReviewResponse;
 import com.driven.dm.shop.domain.entity.Shop;
-import com.driven.dm.shop.infrastructure.repository.ShopJpaRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
@@ -30,7 +30,7 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
-    private final ShopJpaRepository shopJpaRepository;
+    private final ShopRepository shopRepository;
     private final MenuRepository menuRepository;
 
     @Override
@@ -43,7 +43,7 @@ public class ReviewServiceImpl implements ReviewService {
             throw new AppException(ReviewErrorCode.FORBIDDEN_REVIEW_OWNER);
         }
 
-        Shop shop = shopJpaRepository.findByIdWithMenus(request.getShopId())
+        Shop shop = shopRepository.findByIdWithMenus(request.getShopId())
             .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
 
         Menu menu = null;
