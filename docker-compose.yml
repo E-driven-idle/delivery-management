@@ -9,13 +9,13 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U appuser -d appdb"]
+      test: [ "CMD-SHELL", "pg_isready -U appuser -d appdb" ]
       interval: 5s
       timeout: 3s
       retries: 15
 
   app:
-    image: ghcr.io/sejuno/delivery-management-app:latest
+    image: ghcr.io/${OWNER_LC}/delivery-management-app:latest
     container_name: delivery-management
     depends_on:
       db:
@@ -26,8 +26,8 @@ services:
       SPRING_DATASOURCE_PASSWORD: ${DB_PASSWORD}
       KAKAO_LOCAL_REST_API_KEY: ${KAKAO_KEY}
       AI_OPENAI_API_KEY: ${OPENAI_API_KEY}
-      JWT_SECRET : ${JWT_SECRET}
-      JWT_EXPIRATION : ${EXPIRATION}
+      JWT_SECRET: ${JWT_SECRET}
+      JWT_EXPIRATION: ${EXPIRATION}
     ports:
       - "18080:8080"
     restart: unless-stopped

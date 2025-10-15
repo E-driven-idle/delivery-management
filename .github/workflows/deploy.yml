@@ -11,7 +11,13 @@ permissions:
 
 env:
   JAVA_VERSION: '17'
+<<<<<<< Updated upstream
   IMAGE_NAME: ghcr.io/sejuno/delivery-management-app
+=======
+  OWNER_LC: ${{ toLower(github.repository_owner) }}
+  IMAGE_REPO: delivery-management-app
+  IMAGE_NAME: ghcr.io/${{ toLower(github.repository_owner) }}/${{ env.IMAGE_REPO }}
+>>>>>>> Stashed changes
   IMAGE_TAG: latest
 
 jobs:
@@ -92,6 +98,7 @@ jobs:
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             SPRING_PROFILES_ACTIVE=develop
             EOF
+            echo "OWNER_LC=${{ toLower(github.repository_owner) }}" >> ~/app/.env
             chmod 600 ~/app/.env
 
       - name: Deploy on EC2
