@@ -15,6 +15,8 @@ public class MenuShopResponse {
     @Builder
     public static class MenuResponse {
         private String menuName;
+        private String menuDescription;
+        private String menuKeyword;
         private Long menuPrice;
     }
 
