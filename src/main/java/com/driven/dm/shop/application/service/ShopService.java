@@ -70,7 +70,7 @@ public class ShopService {
                     .fullAddress(
                         openShop.getAddress() != null
                             ? openShop.getAddress().getFullAddress()
-                            : null
+                            : ""
                     )
                     .build();
                 shopListResponseDto.add(shopListResponse);
@@ -120,7 +120,7 @@ public class ShopService {
                 .fullAddress(
                     shop.getAddress() != null
                         ? shop.getAddress().getFullAddress()
-                        : null
+                        : ""
                 )
                 .build())
             .toList();
@@ -139,7 +139,7 @@ public class ShopService {
                 .fullAddress(
                     shop.getAddress() != null
                         ? shop.getAddress().getFullAddress()
-                        : null
+                        : ""
                 )
                 .build())
             .toList();
