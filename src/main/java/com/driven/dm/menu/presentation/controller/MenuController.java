@@ -12,6 +12,9 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -33,10 +36,13 @@ public class MenuController {
     private final MenuService menuService;
 
     @GetMapping
-    public ResponseEntity<List<MenuListResponse>> menuList(
-        @AuthenticationPrincipal SecurityUser securityUser
+    public ResponseEntity<Page<MenuListResponse>> menuList(
+        @AuthenticationPrincipal SecurityUser securityUser,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "DESC") Direction direction
     ) {
-        List<MenuListResponse> menuListResponses = menuService.menuList(securityUser);
+        Page<MenuListResponse> menuListResponses = menuService.menuList(securityUser, page, size, direction);
 
         return ResponseEntity.ok().body(menuListResponses);
     }
@@ -63,10 +69,14 @@ public class MenuController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<MenuListResponse>> searchByMenuName(
-        @RequestParam("menuName") String menuName)
+    public ResponseEntity<Page<MenuListResponse>> searchByMenuName(
+        @RequestParam("menuName") String menuName,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "DESC") Sort.Direction direction
+        )
     {
-        List<MenuListResponse> menuListResponses = menuService.searchByMenuName(menuName);
+        Page<MenuListResponse> menuListResponses = menuService.searchByMenuName(menuName, page, size, direction);
         return ResponseEntity.ok().body(menuListResponses);
     }
 
