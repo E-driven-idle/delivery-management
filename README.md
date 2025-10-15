@@ -38,12 +38,12 @@
 ### Backend
 ![Java](https://img.shields.io/badge/Java-17-007396?style=for-the-badge&logo=java)
 ![Spring Boot](https://img.shields.io/badge/Spring%20Boot-3.x-6DB33F?style=for-the-badge&logo=spring)
-![Spring Data JPA](https://img.shields.io/badge/Spring%20Data%20JPA-6DB33F?style=for-the-badge&logo=spring)
 ![JWT](https://img.shields.io/badge/JWT-000000?style=for-the-badge&logo=jsonwebtokens)
-![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=for-the-badge&logo=spring)
+![Spring Data JPA](https://img.shields.io/badge/Spring%20Data%20JPA-6DB33F?style=for-the-badge&logo=spring)
+![Spring Security](https://img.shields.io/badge/Spring%20Security-D32F2F?style=for-the-badge&logo=spring)
 ![Spring AI](https://img.shields.io/badge/Spring%20AI-000000?style=for-the-badge&logo=spring&logoColor=6DB33F)
 ![ChatClient](https://img.shields.io/badge/ChatClient-6DB33F?style=for-the-badge&logoColor=white)
-
+![Resilience4j](https://img.shields.io/badge/Resilience4j-0A8FDC?style=for-the-badge&logo=resilience4j&logoColor=white)
 
 ### Database & Storage
 ![PostgreSQL](https://img.shields.io/badge/PostgreSQL-16.0-4169E1?style=for-the-badge&logo=postgresql
