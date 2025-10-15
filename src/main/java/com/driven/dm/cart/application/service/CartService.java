@@ -54,7 +54,8 @@ public class CartService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
-        Shop shop = shopRepository.selectShop(shopId);
+        Shop shop = shopRepository.selectShop(shopId)
+            .orElseThrow(() -> new AppException(ShopErrorCode.SHOP_NOT_FOUND));
         if (shop == null || shop.getDeletedAt() != null) {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }
@@ -93,7 +94,8 @@ public class CartService {
 
         long cartTotal = cartReadRepository.sumShopCartTotal(userId, shopId);
 
-        Shop shop = shopRepository.selectShop(shopId);
+        Shop shop = shopRepository.selectShop(shopId)
+            .orElseThrow(() -> new AppException(ShopErrorCode.SHOP_NOT_FOUND));
         if (shop == null || shop.getDeletedAt() != null) {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }

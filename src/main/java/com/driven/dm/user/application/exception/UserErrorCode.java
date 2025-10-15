@@ -14,6 +14,7 @@ public enum UserErrorCode implements ErrorCode {
     USER_FORBIDDEN("USER004", "권한이 없습니다", HttpStatus.FORBIDDEN),
     MAX_ADDRESS_REACHED("USER005", "주소는 최대 10개까지 등록가능합니다.", HttpStatus.CONFLICT),
     SELF_ROLE_UPDATE("USER006", "본인의 권한은 변경할 수 없습니다.", HttpStatus.CONFLICT),
+    USER_ADDRESS_NOT_FOUND("USER007", "해당 주소를 찾을 수 없습니다.", HttpStatus.NOT_FOUND)
     ;
 
     private final String code;

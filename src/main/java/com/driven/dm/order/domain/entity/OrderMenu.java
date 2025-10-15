@@ -1,5 +1,6 @@
 package com.driven.dm.order.domain.entity;
 
+import com.driven.dm.menu.domain.entity.Menu;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -37,8 +38,21 @@ public class OrderMenu {
     private Long menuPriceSnapshot;
 
     @Column(name = "quantity")
-    private Long quantity;
+    private int quantity;
 
     @Column(name = "total_price")
     private Long totalPrice;
+
+    public static OrderMenu of(Menu menu, int quantity) {
+        OrderMenu orderMenu = new OrderMenu();
+        orderMenu.menuNameSnapshot = menu.getMenuName();
+        orderMenu.menuPriceSnapshot = menu.getMenuPrice();
+        orderMenu.quantity = quantity;
+        orderMenu.totalPrice = menu.getMenuPrice() * quantity;
+        return orderMenu;
+    }
+
+    public void setOrder(Order order) {
+        this.order = order;
+    }
 }

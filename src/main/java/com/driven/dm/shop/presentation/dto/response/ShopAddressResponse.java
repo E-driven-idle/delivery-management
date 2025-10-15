@@ -6,9 +6,8 @@ import lombok.Getter;
 
 @Getter
 @Builder
-public class AddressResponse {
+public class ShopAddressResponse {
 
-    private UUID id;
     private String fullAddress;
     private String region_1depth_name;
     private String region_2depth_name;
