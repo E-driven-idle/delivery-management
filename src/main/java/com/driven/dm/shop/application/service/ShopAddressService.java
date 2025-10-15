@@ -13,6 +13,8 @@ import com.driven.dm.shop.presentation.dto.request.ShopAddressUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.ShopAddressResponse;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
+import com.driven.dm.user.domain.entity.UserRole;
+import com.driven.dm.user.domain.entity.UserStatus;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -148,6 +150,29 @@ public class ShopAddressService {
             .build();
     }
 
+    @Transactional
+    public void deleteAddress(UUID id, SecurityUser securityUser) {
+
+        Shop shop = getShop(id);
+        User user = getUser(securityUser);
+
+        if (shop.getStatus().equals(ShopStatus.DELETED)) {
+            throw new AppException(ShopErrorCode.SHOP_ALREADY_DELETED);
+        }
+
+        boolean privileged = isOwner(user, shop)
+            || user.getRole().equals(UserRole.MANAGER)
+            || user.getRole().equals(UserRole.MASTER);
+
+        if (!privileged) {
+            throw new  AppException(ShopErrorCode.SHOP_NOT_OWNER);
+        }
+
+        ShopAddress shopAddress = getShopAddress(shop);
+        shopAddress.deleteAddress();
+        shopAddressRepository.deleteAddress(shopAddress);
+    }
+
     private Shop getShop(UUID id) {
 
         return shopRepository.selectShop(id).orElseThrow(
@@ -162,6 +187,13 @@ public class ShopAddressService {
         );
     }
 
+    private ShopAddress getShopAddress(Shop shop) {
+
+        return shopAddressRepository.selectAddress(shop.getId()).orElseThrow(
+            () -> new AppException(ShopErrorCode.ADDRESS_NOT_FOUND)
+        );
+    }
+
     private boolean isOwner(User user, Shop shop) {
 
         if(user.getId().equals(shop.getOwner().getId())) {
@@ -169,5 +201,4 @@ public class ShopAddressService {
         }
         return false;
     }
-
 }

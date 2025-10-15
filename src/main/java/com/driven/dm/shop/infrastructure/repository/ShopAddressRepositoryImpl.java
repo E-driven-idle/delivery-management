@@ -24,4 +24,10 @@ public class ShopAddressRepositoryImpl implements ShopAddressRepository {
 
         return Optional.of(shopAddressJpaRepository.findByShopId(id));
     }
+
+    @Override
+    public void deleteAddress(ShopAddress shopAddress) {
+
+        shopAddressJpaRepository.save(shopAddress);
+    }
 }
