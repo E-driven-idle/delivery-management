@@ -11,10 +11,9 @@ permissions:
 
 env:
   JAVA_VERSION: '17'
-  OWNER_LC: ${{ toLower(github.repository_owner) }}
   IMAGE_REPO: delivery-management-app
-  IMAGE_NAME: ghcr.io/${{ toLower(github.repository_owner) }}/${{ env.IMAGE_REPO }}
   IMAGE_TAG: latest
+  OWNER_LC: e-driven-idle
 
 jobs:
   build-and-push:
@@ -54,8 +53,8 @@ jobs:
           context: .
           push: true
           tags: |
-            ${{ env.IMAGE_NAME }}:${{ env.IMAGE_TAG }}
-            ${{ env.IMAGE_NAME }}:${{ github.sha }}
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_REPO }}:${{ env.IMAGE_TAG }}
+            ghcr.io/${{ env.OWNER_LC }}/${{ env.IMAGE_REPO }}:${{ github.sha }}
           build-args: |
             JAR_FILE=build/libs/*.jar
 
@@ -94,7 +93,6 @@ jobs:
             OPENAI_API_KEY=${{ secrets.OPENAI_API_KEY }}
             SPRING_PROFILES_ACTIVE=develop
             EOF
-            echo "OWNER_LC=${{ toLower(github.repository_owner) }}" >> ~/app/.env
             chmod 600 ~/app/.env
 
       - name: Deploy on EC2
