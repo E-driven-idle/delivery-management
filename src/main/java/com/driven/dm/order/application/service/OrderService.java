@@ -2,7 +2,7 @@ package com.driven.dm.order.application.service;
 
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
-import com.driven.dm.menu.domain.repository.MenuRepository;
+import com.driven.dm.menu.infrastructure.repository.MenuRepository;
 import com.driven.dm.order.application.exception.OrderErrorCode;
 import com.driven.dm.order.domain.entity.Order;
 import com.driven.dm.order.domain.entity.OrderMenu;

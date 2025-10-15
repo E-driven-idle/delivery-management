@@ -8,14 +8,15 @@ import com.driven.dm.menu.presentation.dto.response.MenuCreateResponse;
 import com.driven.dm.menu.presentation.dto.response.MenuListResponse;
 import com.driven.dm.menu.presentation.dto.response.MenuShopResponse;
 import com.driven.dm.menu.presentation.dto.response.MenuUpdateResponse;
+import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.Mapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
@@ -40,11 +41,14 @@ public class MenuController {
     }
 
     @PostMapping("/{id}")
-    public ResponseEntity<MenuCreateResponse> createMenu(@PathVariable UUID id, @RequestBody MenuCreateRequest menuCreateRequest){
+    public ResponseEntity<MenuCreateResponse> createMenu(
+        @PathVariable UUID id,
+        @AuthenticationPrincipal SecurityUser securityUser,
+        @Valid @RequestBody MenuCreateRequest menuCreateRequest)
+    {
+        MenuCreateResponse menuCreateResponse = menuService.createMenu(id, securityUser, menuCreateRequest);
 
-        MenuCreateResponse menuCreateResponse = menuService.createMenu(id, menuCreateRequest);
-
-        return ResponseEntity.ok().body(menuCreateResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(menuCreateResponse);
     }
 
     @GetMapping("/{id}")
@@ -53,9 +57,9 @@ public class MenuController {
         @AuthenticationPrincipal SecurityUser securityUser
     ) {
         MenuShopResponse menuShopResponse = menuService.shopMenuList(id, securityUser);
+
         return ResponseEntity.ok().body(menuShopResponse);
     }
-
 
     @PutMapping("/{id}")
     public ResponseEntity<MenuUpdateResponse> updateMenu(

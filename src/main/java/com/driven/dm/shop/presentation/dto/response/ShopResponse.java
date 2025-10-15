@@ -1,17 +1,14 @@
 package com.driven.dm.shop.presentation.dto.response;
 
 import com.driven.dm.shop.domain.entity.Shop;
-import com.driven.dm.shop.domain.entity.ShopAddress;
 import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
-import java.util.Optional;
-import java.util.UUID;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class ShopResponseDto {
+public class ShopResponse {
 
     private String shopName;
 
@@ -25,9 +22,9 @@ public class ShopResponseDto {
 
     private String fullAddress;
 
-    public static ShopResponseDto from(Shop shop) {
+    public static ShopResponse from(Shop shop) {
 
-        return ShopResponseDto.builder()
+        return ShopResponse.builder()
             .shopName(shop.getShopName())
             .description(shop.getDescription())
             .category(shop.getCategory())

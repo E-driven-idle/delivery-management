@@ -12,8 +12,8 @@ import com.driven.dm.shop.domain.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
-import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
-import com.driven.dm.shop.presentation.dto.response.ShopResponseDto;
+import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
+import com.driven.dm.shop.presentation.dto.response.ShopResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopUpdateResponse;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
@@ -55,14 +55,14 @@ public class ShopService {
     }
 
     @Transactional(readOnly = true)
-    public List<ShopListResponseDto> shopList() {
+    public List<ShopListResponse> shopList() {
 
         List<Shop> shopList = shopRepository.getShopList();
-        List<ShopListResponseDto> shopListResponseDto = new ArrayList<>();
+        List<ShopListResponse> shopListResponseRequest = new ArrayList<>();
 
         for (Shop openShop : shopList) {
             if(openShop.getStatus().equals(ShopStatus.OPEN) || openShop.getStatus().equals(ShopStatus.CLOSED)) {
-                ShopListResponseDto shopListResponse = ShopListResponseDto.builder()
+                ShopListResponse shopListResponse = ShopListResponse.builder()
                     .shopName(openShop.getShopName())
                     .description(openShop.getDescription())
                     .category(openShop.getCategory().toString())
@@ -73,20 +73,16 @@ public class ShopService {
                             : ""
                     )
                     .build();
-                shopListResponseDto.add(shopListResponse);
+                shopListResponseRequest.add(shopListResponse);
             }
         }
 
-        return shopListResponseDto;
+        return shopListResponseRequest;
     }
 
     @Transactional(readOnly = true)
-    public ShopResponseDto selectShop(UUID id) {
+    public ShopResponse selectShop(UUID id) {
         Shop shop = getShop(id);
-
-        if(shop == null){
-            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
-        }
 
         if (shop.getStatus().equals(ShopStatus.DELETED)) {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
@@ -96,7 +92,7 @@ public class ShopService {
             .map(ShopAddress::getFullAddress)
             .orElse(null);
 
-        return  ShopResponseDto.builder()
+        return  ShopResponse.builder()
             .shopName(shop.getShopName())
             .description(shop.getDescription())
             .category(shop.getCategory())
@@ -107,12 +103,12 @@ public class ShopService {
     }
 
     @Transactional(readOnly = true)
-    public List<ShopListResponseDto> searchByShopName(String shopName) {
+    public List<ShopListResponse> searchByShopName(String shopName) {
 
         List<Shop> shops = shopRepository.findByShopNameContainingAndStatusNot(shopName, ShopStatus.DELETED);
 
         return shops.stream()
-            .map(shop -> ShopListResponseDto.builder()
+            .map(shop -> ShopListResponse.builder()
                 .shopName(shop.getShopName())
                 .description(shop.getDescription())
                 .category(shop.getCategory().toString())
@@ -127,11 +123,11 @@ public class ShopService {
     }
 
     @Transactional(readOnly = true)
-    public List<ShopListResponseDto> searchByCategory(ShopCategory category) {
+    public List<ShopListResponse> searchByCategory(ShopCategory category) {
         List<Shop> shopList = shopRepository.findByCategoryAndStatusNot(category, ShopStatus.DELETED);
 
         return shopList.stream()
-            .map(shop -> ShopListResponseDto.builder()
+            .map(shop -> ShopListResponse.builder()
                 .shopName(shop.getShopName())
                 .description(shop.getDescription())
                 .category(shop.getCategory().toString())

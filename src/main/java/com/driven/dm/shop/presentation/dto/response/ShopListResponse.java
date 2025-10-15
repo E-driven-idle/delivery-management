@@ -1,13 +1,11 @@
 package com.driven.dm.shop.presentation.dto.response;
 
-import com.driven.dm.shop.domain.entity.ShopAddress;
-import com.driven.dm.shop.presentation.dto.response.KakaoAddressSearchResponse.Address;
 import lombok.Builder;
 import lombok.Data;
 
 @Data
 @Builder
-public class ShopListResponseDto {
+public class ShopListResponse {
 
     private String shopName;
     private String description;

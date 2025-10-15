@@ -16,6 +16,7 @@ import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
 import lombok.AccessLevel;
+import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
@@ -25,6 +26,7 @@ import lombok.ToString;
 @ToString
 @Table(name = "p_menu")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
+@AllArgsConstructor(access = AccessLevel.PRIVATE)
 public class Menu extends BaseEntity {
 
     @Id
@@ -42,18 +44,27 @@ public class Menu extends BaseEntity {
     @Column(name = "menu_price")
     private Long menuPrice;
 
-    @Column(name = "display_order")
-    private Integer displayOrder;
+    @Column(name = "menu_description")
+    private String menuDescription;
+
+    @Column(name = "menu_keyword")
+    private String menuKeyword;
+
+    @Column(name = "ai_support")
+    private boolean aiSupport;
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status")
     private MenuStatus status;
 
-    public static Menu of(Shop shop, String menuName, Long menuPrice) {
+    public static Menu of(Shop shop, String menuName, String menuDescription, Long menuPrice, String menuKeyword, boolean isAi) {
         Menu menu = new Menu();
         menu.shop = shop;
         menu.menuName = menuName;
+        menu.menuDescription = menuDescription;
         menu.menuPrice = menuPrice;
+        menu.menuKeyword = menuKeyword;
+        menu.aiSupport = isAi;
         menu.status = MenuStatus.ACTIVE;
         return menu;
     }
@@ -66,16 +77,20 @@ public class Menu extends BaseEntity {
         this.menuPrice = menuPrice;
     }
 
-    public void changeStatus(String status){
+    public void changeMenuDescription(String menuDescription) {
+        this.menuDescription = menuDescription;
+    }
 
-        if (status.equals("active")){
+    public void changeMenuKeyword(String menuKeyword) {
+        this.menuKeyword = menuKeyword;
+    }
+
+    public void changeStatus(String status) {
+
+        if (status.equals("open")) {
             this.status = MenuStatus.ACTIVE;
-        } else if (status.equals("hidden")){
-            this.status = MenuStatus.HIDDEN;
-        } else if (status.equals("deleted")) {
-            this.status = MenuStatus.DELETED;
         } else {
-            throw new AppException(ApiErrorCode.INVALID_REQUEST);
+            this.status = MenuStatus.HIDDEN;
         }
     }
 
@@ -83,5 +98,4 @@ public class Menu extends BaseEntity {
         delete(this.getShop().getOwner().getId());
         this.status = MenuStatus.DELETED;
     }
-
 }

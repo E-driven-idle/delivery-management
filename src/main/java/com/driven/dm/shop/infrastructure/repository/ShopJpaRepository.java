@@ -15,6 +15,8 @@ public interface ShopJpaRepository extends JpaRepository<Shop, UUID> {
     @Query("SELECT s FROM Shop s JOIN FETCH s.menu WHERE s.id = :shopId")
     Optional<Shop> findByIdWithMenus(@Param("shopId") UUID id);
 
+    Optional<Shop> findByMenu_Id(UUID menu_id);
+
     @Query("""
           SELECT s FROM Shop s
           WHERE LOWER(s.shopName) LIKE LOWER(CONCAT('%', :shopName, '%'))

@@ -8,8 +8,9 @@ import lombok.Data;
 @Builder
 public class MenuCreateResponse {
 
-    private UUID menuId;
     private String menuName;
+    private String menuDescription;
+    private String menuKeyword;
     private Long menuPrice;
 
 }
