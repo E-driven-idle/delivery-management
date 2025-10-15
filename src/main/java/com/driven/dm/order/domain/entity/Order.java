@@ -79,4 +79,12 @@ public class Order {
         orderMenus.add(orderMenu);
         orderMenu.setOrder(this);
     }
+
+    public boolean isShopOwner(UUID userId) {
+        return this.getShop().getOwner().getId().equals(userId);
+    }
+
+    public void updateStatus(OrderStatus orderStatus) {
+        this.orderStatus = orderStatus;
+    }
 }
