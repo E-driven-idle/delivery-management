@@ -1,5 +1,6 @@
 package com.driven.dm.order.application.service;
 
+import com.driven.dm.order.infrastructure.repository.OrderRepository;
 import java.util.UUID;
 
 import org.springframework.stereotype.Service;
@@ -7,7 +8,6 @@ import org.springframework.stereotype.Service;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.order.application.exception.PaymentErrorCode;
 import com.driven.dm.order.domain.entity.Order;
-import com.driven.dm.order.domain.repository.OrderRepository;
 
 import lombok.RequiredArgsConstructor;
 
