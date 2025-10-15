@@ -88,4 +88,13 @@ public class Order extends BaseEntity {
     public void updateStatus(OrderStatus orderStatus) {
         this.orderStatus = orderStatus;
     }
+
+    public void cancel() {
+        this.orderStatus = OrderStatus.CANCELED;
+    }
+
+    public void delete(UUID deletedBy) {
+        super.delete(deletedBy);
+        this.orderStatus = OrderStatus.CANCELED;
+    }
 }

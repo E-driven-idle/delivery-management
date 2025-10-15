@@ -1,7 +1,6 @@
 package com.driven.dm.order.infrastructure.repository;
 
 import com.driven.dm.order.domain.entity.Order;
-import com.driven.dm.order.presentation.dto.response.OrderResponse;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;

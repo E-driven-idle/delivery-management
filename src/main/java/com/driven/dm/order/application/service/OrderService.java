@@ -112,6 +112,26 @@ public class OrderService {
         return OrderResponse.of(order);
     }
 
+    @Transactional
+    public UUID cancelOrder(UUID orderId, ApiUser apiUser) {
+        Order order = findOrderOrThrow(orderId);
+
+        orderStatusTransitionPolicy.assertCanCancel(order, apiUser.userId(), apiUser.role());
+
+        order.cancel();
+        return order.getId();
+    }
+
+    @Transactional
+    public UUID deleteOrder(UUID orderId, ApiUser apiUser) {
+        Order order = findOrderOrThrow(orderId);
+
+        orderStatusTransitionPolicy.assertCanDelete(order, apiUser.userId(), apiUser.role());
+
+        order.delete(apiUser.userId());
+        return order.getId();
+    }
+
     private Order findOrderOrThrow(UUID orderId) {
         return orderRepository.findById(orderId).orElseThrow(() -> {
             throw AppException.of(OrderErrorCode.ORDER_NOT_FOUND);
