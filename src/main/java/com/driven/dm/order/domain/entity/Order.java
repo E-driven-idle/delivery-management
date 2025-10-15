@@ -1,5 +1,6 @@
 package com.driven.dm.order.domain.entity;
 
+import com.driven.dm.global.entity.BaseEntity;
 import com.driven.dm.payment.domain.entity.PaymentStatus;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.user.domain.entity.User;
@@ -29,7 +30,7 @@ import lombok.ToString;
 @ToString
 @Table(name = "p_order")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Order {
+public class Order extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
