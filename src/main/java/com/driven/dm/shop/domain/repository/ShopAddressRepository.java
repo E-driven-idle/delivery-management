@@ -10,4 +10,6 @@ public interface ShopAddressRepository {
     ShopAddress createShopAddress(ShopAddress shopAddress);
 
     Optional<ShopAddress> selectAddress(UUID id);
+
+    void deleteAddress(ShopAddress shopAddress);
 }
