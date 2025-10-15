@@ -1,16 +1,23 @@
 package com.driven.dm.shop.application.service;
 
 import com.driven.dm.global.config.security.SecurityUser;
+import com.driven.dm.global.exception.ApiErrorCode;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
+import com.driven.dm.shop.domain.entity.ShopAddress;
+import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
 import com.driven.dm.shop.domain.repository.ShopRepository;
-import com.driven.dm.shop.presentation.dto.request.ShopDto;
-import com.driven.dm.shop.presentation.dto.request.ShopUpdateDto;
+import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
+import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
+import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
 import com.driven.dm.shop.presentation.dto.response.ShopResponseDto;
+import com.driven.dm.shop.presentation.dto.response.ShopUpdateResponse;
+import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
+import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,32 +34,28 @@ public class ShopService {
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
 
-    public ShopResponseDto createShop(SecurityUser securityUser, ShopDto shopDto) {
+    @Transactional
+    public ShopCreateResponse createShop(SecurityUser securityUser, ShopCreateRequest shopCreateRequest) {
 
-        // 유저 정보 확인
-        Optional<User> findUser = userRepository.findById(securityUser.getId());
-        if (!findUser.isPresent()) {
-            // TODO
-            // 회원이 존재하지 않는다면 에러 처리
+        User user = getUser(securityUser);
+
+        boolean isOwner = user.getRole().equals(UserRole.OWNER);
+
+        if (isOwner) {
+            Shop shop = Shop.of(user, shopCreateRequest);
+            Shop createdShop = shopRepository.createShop(shop);
+            return ShopCreateResponse.builder()
+                .shopName(createdShop.getShopName())
+                .shopDescription(createdShop.getDescription())
+                .build();
+
+        }else {
+            throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
-
-        if(!findUser.get().getRole().toString().equals("ROLE_OWNER")){
-            // TODO
-            // 권한이 사장이 아닌 경우 에러 처리
-        }
-
-        if (findUser.get().getStatus().toString().equals("DELETED")) {
-            // TODO
-            // 아이디를 삭제한 사장은 추가할 수 없음!
-        }
-
-        Shop shop = Shop.of(findUser.get(), shopDto);
-        Shop createdShop = shopRepository.createShop(shop);
-
-        return ShopResponseDto.from(createdShop);
     }
 
-    public List<ShopListResponseDto> getShopList() {
+    @Transactional(readOnly = true)
+    public List<ShopListResponseDto> shopList() {
 
         List<Shop> shopList = shopRepository.getShopList();
         List<ShopListResponseDto> shopListResponseDto = new ArrayList<>();
@@ -62,8 +65,13 @@ public class ShopService {
                 ShopListResponseDto shopListResponse = ShopListResponseDto.builder()
                     .shopName(openShop.getShopName())
                     .description(openShop.getDescription())
+                    .category(openShop.getCategory().toString())
                     .avgRating(openShop.getAvgRating())
-                    .address(openShop.getAddress())
+                    .fullAddress(
+                        openShop.getAddress() != null
+                            ? openShop.getAddress().getFullAddress()
+                            : null
+                    )
                     .build();
                 shopListResponseDto.add(shopListResponse);
             }
@@ -73,59 +81,132 @@ public class ShopService {
     }
 
     @Transactional(readOnly = true)
-    public ShopResponseDto getShop(UUID id) {
-        Shop selectShop = shopRepository.selectShop(id);
-
-        if(selectShop == null){
-            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
-        }
-
-        return  ShopResponseDto.from(selectShop);
-    }
-
-    public ShopResponseDto updateShop(UUID id, SecurityUser securityUser, ShopUpdateDto shopUpdateDto) {
-        Shop selectShop = shopRepository.selectShop(id);
-        Optional<User> user = userRepository.findById(securityUser.getId());
-        if(!user.get().getRole().toString().equals("ROLE_OWNER")){
-            // TODO
-            // 사장이 아닐 시 예외 처리
-        }
-
-        if (!(user.get().getId() == selectShop.getOwner().getId())) {
-            // TODO
-            // 본인이 등록한 가게가 아니라면 수정 불가능한 예외 처리
-        }
-
-        if (selectShop.getId() == null) {
-            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
-        }
-
-        if (selectShop.getStatus().equals(ShopStatus.DELETED)) {
-            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
-        }
-
-        selectShop.update(shopUpdateDto);
-        Shop shop = shopRepository.updateShop(selectShop);
-        return ShopResponseDto.from(shop);
-    }
-
-    public void deleteShop(UUID id, SecurityUser securityUser) {
-        Shop shop = shopRepository.selectShop(id);
-        Optional<User> user = userRepository.findById(securityUser.getId());
+    public ShopResponseDto selectShop(UUID id) {
+        Shop shop = getShop(id);
 
         if(shop == null){
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }
 
-        if(!user.get().getRole().toString().equals("ROLE_OWNER")){
-            // 사장이 아님
+        if (shop.getStatus().equals(ShopStatus.DELETED)) {
+            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }
 
-        if(!(user.get().getId().equals(shop.getOwner().getId()))) {
-            // 본인 가게가 아님
-        }
+        String fullAddress = Optional.ofNullable(shop.getAddress())
+            .map(ShopAddress::getFullAddress)
+            .orElse(null);
 
-        Shop deleteShop = shop.deleteShop(user.get().getId());
-        shopRepository.updateShop(deleteShop);
+        return  ShopResponseDto.builder()
+            .shopName(shop.getShopName())
+            .description(shop.getDescription())
+            .category(shop.getCategory())
+            .avgRating(shop.getAvgRating())
+            .shopStatus(shop.getStatus())
+            .fullAddress(fullAddress)
+            .build();
     }
+
+    @Transactional(readOnly = true)
+    public List<ShopListResponseDto> searchByShopName(String shopName) {
+
+        List<Shop> shops = shopRepository.findByShopNameContainingAndStatusNot(shopName, ShopStatus.DELETED);
+
+        return shops.stream()
+            .map(shop -> ShopListResponseDto.builder()
+                .shopName(shop.getShopName())
+                .description(shop.getDescription())
+                .category(shop.getCategory().toString())
+                .avgRating(shop.getAvgRating())
+                .fullAddress(
+                    shop.getAddress() != null
+                        ? shop.getAddress().getFullAddress()
+                        : null
+                )
+                .build())
+            .toList();
+    }
+
+    @Transactional(readOnly = true)
+    public List<ShopListResponseDto> searchByCategory(ShopCategory category) {
+        List<Shop> shopList = shopRepository.findByCategoryAndStatusNot(category, ShopStatus.DELETED);
+
+        return shopList.stream()
+            .map(shop -> ShopListResponseDto.builder()
+                .shopName(shop.getShopName())
+                .description(shop.getDescription())
+                .category(shop.getCategory().toString())
+                .avgRating(shop.getAvgRating())
+                .fullAddress(
+                    shop.getAddress() != null
+                        ? shop.getAddress().getFullAddress()
+                        : null
+                )
+                .build())
+            .toList();
+    }
+
+    @Transactional
+    public ShopUpdateResponse updateShop(UUID id, SecurityUser securityUser, ShopUpdateRequest shopUpdateRequest) {
+        Shop shop = getShop(id);
+        User user = getUser(securityUser);
+
+        if (shop.getStatus().equals(ShopStatus.DELETED)) {
+            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
+        }
+
+        if (isOwner(user, shop)) {
+            shop.update(shopUpdateRequest.getShopName(), shopUpdateRequest.getDescription(), shopUpdateRequest.getStatus(), shopUpdateRequest.getCategory());
+            Shop updatedShop = shopRepository.updateShop(shop);
+            return ShopUpdateResponse.builder()
+                .shopName(updatedShop.getShopName())
+                .description(updatedShop.getDescription())
+                .shopStatus(updatedShop.getStatus())
+                .category(updatedShop.getCategory())
+                .build();
+        } else {
+            throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
+        }
+    }
+
+    @Transactional
+    public void deleteShop(UUID id, SecurityUser securityUser) {
+
+        Shop shop = getShop(id);
+        User user = getUser(securityUser);
+
+        boolean privileges = isOwner(user, shop)
+            || user.getRole().equals(UserRole.MANAGER)
+            || user.getRole().equals(UserRole.MASTER);
+
+        if (privileges) {
+            Shop deleteShop = shop.deleteShop(user.getId());
+            shopRepository.updateShop(deleteShop);
+        } else {
+            throw new AppException(ApiErrorCode.FORBIDDEN);
+        }
+    }
+
+    private User getUser(SecurityUser securityUser) {
+
+        return userRepository.findById(securityUser.getId()).orElseThrow(
+            () -> new AppException(UserErrorCode.USER_NOT_FOUND));
+    }
+
+    private Shop getShop(UUID shopId) {
+
+        return shopRepository.selectShop(shopId).orElseThrow(
+            () -> new AppException(ShopErrorCode.SHOP_NOT_FOUND)
+        );
+    }
+
+    private boolean isOwner(User user, Shop shop) {
+
+        if( !user.getRole().equals(UserRole.OWNER)
+            || !user.getId().equals(shop.getOwner().getId())){
+            return false;
+        } else {
+            return true;
+        }
+    }
+
 }

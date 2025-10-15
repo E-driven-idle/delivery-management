@@ -1,6 +1,5 @@
 package com.driven.dm.shop.domain.entity;
 
-import com.driven.dm.shop.presentation.dto.request.AddressCreateRequest;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -9,7 +8,6 @@ import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
 import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
-import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.UUID;
@@ -74,6 +72,17 @@ public class ShopAddress {
         shopAddress.longitude = longitude;
         shopAddress.latitude = latitude;
         return shopAddress;
+    }
+
+    public void updateAddress(String fullAddress, Double longitude, Double latitude,
+                                String region_1depth, String region_2depth, String region_3depth, String h_code) {
+        this.fullAddress = fullAddress;
+        this.longitude = longitude;
+        this.latitude = latitude;
+        this.region_1depth = region_1depth;
+        this.region_2depth = region_2depth;
+        this.region_3depth = region_3depth;
+        this.h_code = h_code;
     }
 
 }

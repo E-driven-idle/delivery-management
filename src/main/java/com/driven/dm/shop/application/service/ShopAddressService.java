@@ -5,10 +5,12 @@ import com.driven.dm.global.exception.AppException;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopAddress;
+import com.driven.dm.shop.domain.entity.ShopStatus;
 import com.driven.dm.shop.domain.repository.ShopAddressRepository;
 import com.driven.dm.shop.domain.repository.ShopRepository;
-import com.driven.dm.shop.presentation.dto.request.AddressCreateRequest;
-import com.driven.dm.shop.presentation.dto.response.AddressResponse;
+import com.driven.dm.shop.presentation.dto.request.ShopAddressCreateRequest;
+import com.driven.dm.shop.presentation.dto.request.ShopAddressUpdateRequest;
+import com.driven.dm.shop.presentation.dto.response.ShopAddressResponse;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
@@ -27,23 +29,21 @@ public class ShopAddressService {
     private final ShopAddressRepository shopAddressRepository;
 
     @Transactional
-    public AddressResponse create(UUID id, SecurityUser securityUser ,AddressCreateRequest req) {
+    public ShopAddressResponse createAddress(UUID id, SecurityUser securityUser , ShopAddressCreateRequest req) {
 
-        Shop shop = shopRepository.selectShop(id);
-        if(shop == null){
-            throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
-        }
+        Shop shop = getShop(id);
+        User user = getUser(securityUser);
 
-        User user = userRepository.findById(securityUser.getId()).orElseThrow(
-            () -> new AppException(UserErrorCode.USER_NOT_FOUND)
-        );
-
-        if(!shop.getOwner().getId().equals(user.getId())) {
-            throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
+        if (shop.getStatus().equals(ShopStatus.DELETED)) {
+            throw new AppException(ShopErrorCode.SHOP_ALREADY_DELETED);
         }
 
         if (shop.getAddress() != null) {
             throw new AppException(ShopErrorCode.ADDRESS_DUPLICATE);
+        }
+
+        if (!isOwner(user, shop)) {
+            throw new  AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 
         // 카카오 API 호출
@@ -83,8 +83,7 @@ public class ShopAddressService {
         ShopAddress shopAddress = ShopAddress.of(shop, fullAddress, latitude, longitude, region_1depth_name, region_2depth_name, region_3depth_name, h_code);
         ShopAddress createAddress = shopAddressRepository.createShopAddress(shopAddress);
 
-        return AddressResponse.builder()
-            .id(createAddress.getId())
+        return ShopAddressResponse.builder()
             .fullAddress(createAddress.getFullAddress())
             .region_1depth_name(createAddress.getRegion_1depth())
             .region_2depth_name(createAddress.getRegion_2depth())
@@ -94,6 +93,81 @@ public class ShopAddressService {
             .longitude(createAddress.getLongitude())
             .source("kakao")
             .build();
+    }
+
+    @Transactional
+    public ShopAddressResponse updateAddress(UUID id, SecurityUser securityUser, ShopAddressUpdateRequest shopAddressUpdateRequest) {
+
+        Shop shop = getShop(id);
+        User user = getUser(securityUser);
+
+        if (shop.getStatus().equals(ShopStatus.DELETED)) {
+            throw new AppException(ShopErrorCode.SHOP_ALREADY_DELETED);
+        }
+
+        if (!isOwner(user, shop)) {
+            throw new  AppException(ShopErrorCode.SHOP_NOT_OWNER);
+        }
+
+        ShopAddress shopAddress = shopAddressRepository.selectAddress(shop.getId()).orElseThrow(
+            () -> new AppException(ShopErrorCode.ADDRESS_NOT_FOUND)
+        );
+
+        var doc = kakaoLocalClient.searchFirst(shopAddressUpdateRequest.getQuery()).orElseThrow(
+            () -> new AppException(ShopErrorCode.ADDRESS_NOT_FOUND)
+        );
+
+        var addr = doc.getAddress();
+
+        if (addr == null) {
+            throw new AppException(ShopErrorCode.ADDRESS_NO_STATE);
+        }
+
+        Double longitude = Double.parseDouble(addr.getX());
+        Double latitude = Double.parseDouble(addr.getY());
+
+        shopAddress.updateAddress(
+            addr.getAddress_name(),
+            latitude,
+            longitude,
+            addr.getRegion_1depth_name(),
+            addr.getRegion_2depth_name(),
+            addr.getRegion_3depth_name(),
+            addr.getH_code()
+        );
+
+        return ShopAddressResponse.builder()
+            .fullAddress(shopAddress.getFullAddress())
+            .region_1depth_name(shopAddress.getRegion_1depth())
+            .region_2depth_name(shopAddress.getRegion_2depth())
+            .region_3depth_name(shopAddress.getRegion_3depth())
+            .h_code(shopAddress.getH_code())
+            .latitude(shopAddress.getLatitude())
+            .longitude(shopAddress.getLongitude())
+            .source("kakao")
+            .build();
+    }
+
+    private Shop getShop(UUID id) {
+
+        return shopRepository.selectShop(id).orElseThrow(
+            () -> new AppException(ShopErrorCode.SHOP_NOT_FOUND)
+        );
+    }
+
+    private User getUser(SecurityUser securityUser) {
+
+        return userRepository.findById(securityUser.getId()).orElseThrow(
+            () -> new AppException(UserErrorCode.USER_NOT_FOUND)
+        );
+    }
+
+    private boolean isOwner(User user, Shop shop) {
+
+        if(user.getId().equals(shop.getOwner().getId())) {
+            return true;
+        }
+        return false;
     }
 
 }
