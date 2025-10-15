@@ -13,6 +13,7 @@ import com.driven.dm.order.infrastructure.repository.OrderRepository;
 import com.driven.dm.order.presentation.dto.request.OrderCreateRequest;
 import com.driven.dm.order.presentation.dto.request.OrderMenuCreateRequest;
 import com.driven.dm.order.presentation.dto.request.OrderUpdateRequest;
+import com.driven.dm.order.presentation.dto.response.OrderPageResponse;
 import com.driven.dm.order.presentation.dto.response.OrderResponse;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
@@ -89,6 +90,46 @@ public class OrderService {
         applicationEventPublisher.publishEvent(
             OrderStatusChangedEvent.from(order, beforeStatus));
         return OrderResponse.of(order);
+    }
+
+    @Transactional(readOnly = true)
+    public OrderPageResponse getOrders(UUID userId, Long page, Long pageSize) {
+        List<Order> orders = orderRepository.findAll(userId, (page - 1) * pageSize, pageSize);
+
+        return OrderPageResponse.of(
+            orders.stream()
+                .map(OrderResponse::of)
+                .toList(),
+            orderRepository.count(userId)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponse getOrder(UUID orderId, UUID userId) {
+        Order order = orderRepository.findByIdAndUser_Id(orderId, userId).orElseThrow(() -> {
+            throw AppException.of(OrderErrorCode.ORDER_NOT_FOUND);
+        });
+        return OrderResponse.of(order);
+    }
+
+    @Transactional
+    public UUID cancelOrder(UUID orderId, ApiUser apiUser) {
+        Order order = findOrderOrThrow(orderId);
+
+        orderStatusTransitionPolicy.assertCanCancel(order, apiUser.userId(), apiUser.role());
+
+        order.cancel();
+        return order.getId();
+    }
+
+    @Transactional
+    public UUID deleteOrder(UUID orderId, ApiUser apiUser) {
+        Order order = findOrderOrThrow(orderId);
+
+        orderStatusTransitionPolicy.assertCanDelete(order, apiUser.userId(), apiUser.role());
+
+        order.delete(apiUser.userId());
+        return order.getId();
     }
 
     private Order findOrderOrThrow(UUID orderId) {
