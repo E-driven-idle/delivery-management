@@ -15,7 +15,7 @@ services:
       retries: 15
 
   app:
-    image: ghcr.io/${OWNER_LC}/delivery-management-app:latest
+    image: ghcr.io/e-driven-idle/delivery-management-app:latest
     container_name: delivery-management
     depends_on:
       db:
