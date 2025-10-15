@@ -1,5 +1,6 @@
 package com.driven.dm.shop.domain.entity;
 
+import com.driven.dm.global.entity.BaseEntity;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -19,7 +20,7 @@ import lombok.NoArgsConstructor;
 @Table(name = "p_shop_address")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class ShopAddress {
+public class ShopAddress extends BaseEntity {
 
     @Id
     @GeneratedValue(strategy = GenerationType.UUID)
@@ -83,6 +84,18 @@ public class ShopAddress {
         this.region_2depth = region_2depth;
         this.region_3depth = region_3depth;
         this.h_code = h_code;
+    }
+
+    public void deleteAddress() {
+        delete(this.shop.getOwner().getId());
+
+        this.fullAddress = "";
+        this.longitude = 0.0;
+        this.latitude = 0.0;
+        this.region_1depth = "";
+        this.region_2depth = "";
+        this.region_3depth = "";
+        this.h_code = "";
     }
 
 }

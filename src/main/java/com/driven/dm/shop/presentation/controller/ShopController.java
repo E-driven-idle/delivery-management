@@ -122,4 +122,14 @@ public class ShopController {
         return ResponseEntity.status(HttpStatus.CREATED).body(shopAddressResponse);
     }
 
+    @DeleteMapping("/{id}/address")
+    public ResponseEntity<Void> deleteAddress(
+        @PathVariable UUID id,
+        @AuthenticationPrincipal SecurityUser securityUser
+    ) {
+        shopAddressService.deleteAddress(id, securityUser);
+
+        return ResponseEntity.status(HttpStatus.NO_CONTENT).body(null);
+    }
+
 }
