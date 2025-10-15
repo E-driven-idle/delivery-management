@@ -2,7 +2,7 @@ package com.driven.dm.review.application.service;
 
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
-import com.driven.dm.menu.infrastructure.repository.MenuJpaRepository;
+import com.driven.dm.menu.infrastructure.repository.MenuRepository;
 import com.driven.dm.review.application.exception.ReviewErrorCode;
 import com.driven.dm.review.domain.entity.Review;
 import com.driven.dm.review.domain.entity.ReviewImage;
@@ -31,7 +31,7 @@ public class ReviewServiceImpl implements ReviewService {
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
     private final ShopJpaRepository shopJpaRepository;
-    private final MenuJpaRepository menuJpaRepository;
+    private final MenuRepository menuRepository;
 
     @Override
     @Transactional
@@ -48,7 +48,7 @@ public class ReviewServiceImpl implements ReviewService {
 
         Menu menu = null;
         if (request.getMenuId() != null) {
-            menu = menuJpaRepository.findByIdAndShop_Id(request.getMenuId(), request.getShopId())
+            menu = menuRepository.findByIdAndShop_Id(request.getMenuId(), request.getShopId())
                 .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
         }
 
