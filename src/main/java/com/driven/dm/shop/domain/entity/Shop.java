@@ -4,7 +4,6 @@ import com.driven.dm.global.entity.BaseEntity;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
-import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.user.domain.entity.User;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
@@ -69,12 +68,12 @@ public class Shop extends BaseEntity {
     @OneToMany(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<Menu> menu = new ArrayList<>();
 
-    public static Shop of(ShopCreateRequest shopCreateRequest){
+    public static Shop of(ShopCreateRequest shopCreateRequest) {
 
         return of(null, shopCreateRequest);
     }
 
-    public static Shop of(User user, ShopCreateRequest shopCreateRequest){
+    public static Shop of(User user, ShopCreateRequest shopCreateRequest) {
         Shop shop = new Shop();
         shop.owner = user;
         shop.shopName = shopCreateRequest.getShopName();
@@ -85,13 +84,13 @@ public class Shop extends BaseEntity {
         return shop;
     }
 
-    public void update(String shopName, String description, String status, String category){
+    public void update(String shopName, String description, String status, String category) {
         this.shopName = shopName;
         this.description = description;
 
-        if(status.equals("OPEN")){
+        if (status.equals("OPEN")) {
             this.status = ShopStatus.OPEN;
-        }else {
+        } else {
             this.status = ShopStatus.CLOSED;
         }
 
@@ -100,7 +99,7 @@ public class Shop extends BaseEntity {
         }
     }
 
-    public Shop deleteShop(UUID id){
+    public Shop deleteShop(UUID id) {
         delete(id);
 
         this.status = ShopStatus.DELETED;
@@ -120,9 +119,13 @@ public class Shop extends BaseEntity {
 
         try {
             this.category = ShopCategory.valueOf(shopCategory.toUpperCase());
-        } catch (AppException e){
+        } catch (AppException e) {
             this.category = ShopCategory.NONE;
         }
+    }
+
+    public void updateAvgRating(Double avg) {
+        this.avgRating = avg == null ? 0.0 : avg;
     }
 
 }
