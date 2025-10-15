@@ -11,7 +11,7 @@ permissions:
 
 env:
   JAVA_VERSION: '17'
-  IMAGE_NAME: ghcr.io/sejuno/delivery-management-app
+  IMAGE_NAME: ghcr.io/${{ github.repository_owner }}/delivery-management-app
   IMAGE_TAG: latest
 
 jobs:
