@@ -19,7 +19,8 @@ spring:
   # OpenAI
   ai:
     openai:
-      api-key: ${OPENAI_API_KEY}
+#      api-key: ${OPENAI_API_KEY}
+      api-key: "INVALID_KEY"
       base-url: https://api.openai.com
       chat:
         options:
@@ -28,6 +29,33 @@ spring:
       max-attempts: 2
       backoff:
         initial-interval: 500ms
+
+  # Resilience4j
+  resilience4j:
+    circuitbreaker:
+      instances:
+        openai:
+          slidingWindowType: COUNT_BASED
+          slidingWindowSize: 20
+          failureRateThreshold: 50
+          waitDurationInOpenState: 30s
+          permittedNumberOfCallsInHalfOpenState: 3
+    retry:
+      instances:
+        openai:
+          maxAttempts: 1        # 사실상 끄기(Resilience4j로만 재시도)
+          waitDuration: 500ms
+          retryExceptions:
+            - org.springframework.web.client.HttpServerErrorException
+            - org.springframework.web.client.ResourceAccessException
+            - java.io.IOException
+          # 4xx는 기본적으로 재시도 대상에서 제외(설정 최소화)
+    ratelimiter:
+      instances:
+        openai:
+          limitForPeriod: 5          # 초당 5회 등, 트래픽/쿼터에 맞게 조절
+          limitRefreshPeriod: 1s
+          timeoutDuration: 0         # 대기 없이 즉시 실패(백프레셔)
 
 logging:
   level:
