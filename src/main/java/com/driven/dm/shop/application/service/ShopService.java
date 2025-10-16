@@ -1,5 +1,7 @@
 package com.driven.dm.shop.application.service;
 
+import static com.driven.dm.global.util.NumberUtils.round1;
+
 import com.driven.dm.global.config.security.SecurityUser;
 import com.driven.dm.global.exception.ApiErrorCode;
 import com.driven.dm.global.exception.AppException;
@@ -35,7 +37,8 @@ public class ShopService {
     private final UserRepository userRepository;
 
     @Transactional
-    public ShopCreateResponse createShop(SecurityUser securityUser, ShopCreateRequest shopCreateRequest) {
+    public ShopCreateResponse createShop(SecurityUser securityUser,
+        ShopCreateRequest shopCreateRequest) {
 
         User user = getUser(securityUser);
 
@@ -49,7 +52,7 @@ public class ShopService {
                 .shopDescription(createdShop.getDescription())
                 .build();
 
-        }else {
+        } else {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
     }
@@ -61,12 +64,13 @@ public class ShopService {
         List<ShopListResponse> shopListResponseRequest = new ArrayList<>();
 
         for (Shop openShop : shopList) {
-            if(openShop.getStatus().equals(ShopStatus.OPEN) || openShop.getStatus().equals(ShopStatus.CLOSED)) {
+            if (openShop.getStatus().equals(ShopStatus.OPEN) || openShop.getStatus()
+                .equals(ShopStatus.CLOSED)) {
                 ShopListResponse shopListResponse = ShopListResponse.builder()
                     .shopName(openShop.getShopName())
                     .description(openShop.getDescription())
                     .category(openShop.getCategory().toString())
-                    .avgRating(openShop.getAvgRating())
+                    .avgRating(round1(openShop.getAvgRating()))
                     .fullAddress(
                         openShop.getAddress() != null
                             ? openShop.getAddress().getFullAddress()
@@ -92,11 +96,11 @@ public class ShopService {
             .map(ShopAddress::getFullAddress)
             .orElse(null);
 
-        return  ShopResponse.builder()
+        return ShopResponse.builder()
             .shopName(shop.getShopName())
             .description(shop.getDescription())
             .category(shop.getCategory())
-            .avgRating(shop.getAvgRating())
+            .avgRating(round1(shop.getAvgRating()))
             .shopStatus(shop.getStatus())
             .fullAddress(fullAddress)
             .build();
@@ -105,14 +109,15 @@ public class ShopService {
     @Transactional(readOnly = true)
     public List<ShopListResponse> searchByShopName(String shopName) {
 
-        List<Shop> shops = shopRepository.findByShopNameContainingAndStatusNot(shopName, ShopStatus.DELETED);
+        List<Shop> shops = shopRepository.findByShopNameContainingAndStatusNot(shopName,
+            ShopStatus.DELETED);
 
         return shops.stream()
             .map(shop -> ShopListResponse.builder()
                 .shopName(shop.getShopName())
                 .description(shop.getDescription())
                 .category(shop.getCategory().toString())
-                .avgRating(shop.getAvgRating())
+                .avgRating(round1(shop.getAvgRating()))
                 .fullAddress(
                     shop.getAddress() != null
                         ? shop.getAddress().getFullAddress()
@@ -124,14 +129,15 @@ public class ShopService {
 
     @Transactional(readOnly = true)
     public List<ShopListResponse> searchByCategory(ShopCategory category) {
-        List<Shop> shopList = shopRepository.findByCategoryAndStatusNot(category, ShopStatus.DELETED);
+        List<Shop> shopList = shopRepository.findByCategoryAndStatusNot(category,
+            ShopStatus.DELETED);
 
         return shopList.stream()
             .map(shop -> ShopListResponse.builder()
                 .shopName(shop.getShopName())
                 .description(shop.getDescription())
                 .category(shop.getCategory().toString())
-                .avgRating(shop.getAvgRating())
+                .avgRating(round1(shop.getAvgRating()))
                 .fullAddress(
                     shop.getAddress() != null
                         ? shop.getAddress().getFullAddress()
@@ -142,7 +148,8 @@ public class ShopService {
     }
 
     @Transactional
-    public ShopUpdateResponse updateShop(UUID id, SecurityUser securityUser, ShopUpdateRequest shopUpdateRequest) {
+    public ShopUpdateResponse updateShop(UUID id, SecurityUser securityUser,
+        ShopUpdateRequest shopUpdateRequest) {
         Shop shop = getShop(id);
         User user = getUser(securityUser);
 
@@ -151,7 +158,8 @@ public class ShopService {
         }
 
         if (isOwner(user, shop)) {
-            shop.update(shopUpdateRequest.getShopName(), shopUpdateRequest.getDescription(), shopUpdateRequest.getStatus(), shopUpdateRequest.getCategory());
+            shop.update(shopUpdateRequest.getShopName(), shopUpdateRequest.getDescription(),
+                shopUpdateRequest.getStatus(), shopUpdateRequest.getCategory());
             Shop updatedShop = shopRepository.save(shop);
             return ShopUpdateResponse.builder()
                 .shopName(updatedShop.getShopName())
@@ -197,8 +205,8 @@ public class ShopService {
 
     private boolean isOwner(User user, Shop shop) {
 
-        if( !user.getRole().equals(UserRole.OWNER)
-            || !user.getId().equals(shop.getOwner().getId())){
+        if (!user.getRole().equals(UserRole.OWNER)
+            || !user.getId().equals(shop.getOwner().getId())) {
             return false;
         } else {
             return true;

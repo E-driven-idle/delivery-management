@@ -1,5 +1,7 @@
 package com.driven.dm.shop.presentation.dto.response;
 
+import static com.driven.dm.global.util.NumberUtils.round1;
+
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
@@ -28,7 +30,7 @@ public class ShopResponse {
             .shopName(shop.getShopName())
             .description(shop.getDescription())
             .category(shop.getCategory())
-            .avgRating(shop.getAvgRating())
+            .avgRating(round1(shop.getAvgRating()))
             .shopStatus(shop.getStatus())
             .fullAddress(
                 shop.getAddress().getFullAddress() != null
