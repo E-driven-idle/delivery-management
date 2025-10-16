@@ -1,7 +1,5 @@
 package com.driven.dm.shop.presentation.dto.response;
 
-import static com.driven.dm.global.util.NumberUtils.round1;
-
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
@@ -10,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class ShopResponseDto {
+public class ShopResponse {
 
     private String shopName;
 
@@ -24,15 +22,20 @@ public class ShopResponseDto {
 
     private String fullAddress;
 
-    public static ShopResponseDto from(Shop shop) {
-        return ShopResponseDto.builder()
+    public static ShopResponse from(Shop shop) {
+
+        return ShopResponse.builder()
             .shopName(shop.getShopName())
             .description(shop.getDescription())
             .category(shop.getCategory())
-            .avgRating(round1(shop.getAvgRating()))
+            .avgRating(shop.getAvgRating())
             .shopStatus(shop.getStatus())
-            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : null)
+            .fullAddress(
+                shop.getAddress().getFullAddress() != null
+                    ? shop.getAddress().getFullAddress()
+                    : null
+            )
             .build();
     }
-}
 
+}

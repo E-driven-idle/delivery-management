@@ -13,7 +13,8 @@ public enum OrderErrorCode implements ErrorCode {
 
     NOT_SHOP_OWNER("ORDER005", "가게 주인이 아닙니다.", HttpStatus.FORBIDDEN),
     COMPLETED_ORDER("ORDER006", "이미 완료된 주문입니다.", HttpStatus.BAD_REQUEST),
-    INVALID_UPDATE_STATUS("ORDER007", "변경할 수 없는 상태입니다.", HttpStatus.BAD_REQUEST);
+    INVALID_UPDATE_STATUS("ORDER007", "변경할 수 없는 상태입니다.", HttpStatus.BAD_REQUEST),
+    INVALID_CANCEL_STATUS("ORDER008","취소가 가능한 상태가 아닙니다." , HttpStatus.CONFLICT);
 
     private final String code;
     private final String message;

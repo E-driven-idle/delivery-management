@@ -2,7 +2,7 @@ package com.driven.dm.review.application.service;
 
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
-import com.driven.dm.menu.infrastructure.repository.MenuJpaRepository;
+import com.driven.dm.menu.infrastructure.repository.MenuRepository;
 import com.driven.dm.review.application.exception.ReviewErrorCode;
 import com.driven.dm.review.domain.entity.Review;
 import com.driven.dm.review.domain.entity.ReviewImage;
@@ -12,7 +12,7 @@ import com.driven.dm.review.presentation.dto.request.ReviewUpdateRequest;
 import com.driven.dm.review.presentation.dto.response.ReviewPageResponse;
 import com.driven.dm.review.presentation.dto.response.ReviewResponse;
 import com.driven.dm.shop.domain.entity.Shop;
-import com.driven.dm.shop.infrastructure.repository.ShopJpaRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
@@ -30,8 +30,8 @@ public class ReviewServiceImpl implements ReviewService {
 
     private final ReviewRepository reviewRepository;
     private final UserRepository userRepository;
-    private final ShopJpaRepository shopJpaRepository;
-    private final MenuJpaRepository menuJpaRepository;
+    private final ShopRepository shopRepository;
+    private final MenuRepository menuRepository;
 
     @Override
     @Transactional
@@ -43,12 +43,12 @@ public class ReviewServiceImpl implements ReviewService {
             throw new AppException(ReviewErrorCode.FORBIDDEN_REVIEW_OWNER);
         }
 
-        Shop shop = shopJpaRepository.findByIdWithMenus(request.getShopId())
+        Shop shop = shopRepository.findByIdWithMenus(request.getShopId())
             .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
 
         Menu menu = null;
         if (request.getMenuId() != null) {
-            menu = menuJpaRepository.findByIdAndShop_Id(request.getMenuId(), request.getShopId())
+            menu = menuRepository.findByIdAndShop_Id(request.getMenuId(), request.getShopId())
                 .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
         }
 

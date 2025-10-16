@@ -15,11 +15,10 @@ import com.driven.dm.cart.presentation.dto.response.UserCartSummaryDto;
 import com.driven.dm.cart.presentation.dto.response.UserCartsResponse;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
-import com.driven.dm.menu.domain.repository.MenuRepository;
-import com.driven.dm.menu.infrastructure.repository.MenuJpaRepository;
+import com.driven.dm.menu.infrastructure.repository.MenuRepository;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
-import com.driven.dm.shop.domain.repository.ShopRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
@@ -54,13 +53,13 @@ public class CartService {
         User user = userRepository.findById(userId)
             .orElseThrow(() -> new AppException(UserErrorCode.USER_NOT_FOUND));
 
-        Shop shop = shopRepository.selectShop(shopId)
+        Shop shop = shopRepository.findById(shopId)
             .orElseThrow(() -> new AppException(ShopErrorCode.SHOP_NOT_FOUND));
         if (shop == null || shop.getDeletedAt() != null) {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }
 
-        Menu menu = menuRepository.selectMenu(req.getMenuId())
+        Menu menu = menuRepository.findById(req.getMenuId())
             .orElseThrow(() -> new AppException(CartErrorCode.INVALID_MENU));
 
         Cart cart = cartRepository
@@ -94,7 +93,7 @@ public class CartService {
 
         long cartTotal = cartReadRepository.sumShopCartTotal(userId, shopId);
 
-        Shop shop = shopRepository.selectShop(shopId)
+        Shop shop = shopRepository.findById(shopId)
             .orElseThrow(() -> new AppException(ShopErrorCode.SHOP_NOT_FOUND));
         if (shop == null || shop.getDeletedAt() != null) {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);

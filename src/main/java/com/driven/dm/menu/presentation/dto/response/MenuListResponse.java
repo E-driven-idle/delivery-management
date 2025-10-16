@@ -11,12 +11,14 @@ public class MenuListResponse {
 
     private String shopName;
     private String menuName;
+    private String menuKeyword;
     private Long menuPrice;
 
     public static MenuListResponse from(Menu menu){
         MenuListResponse menuListResponse = new MenuListResponse();
        menuListResponse.shopName = menu.getShop().getShopName();
        menuListResponse.menuName = menu.getMenuName();
+       menuListResponse.menuKeyword = menu.getMenuKeyword();
        menuListResponse.menuPrice = menu.getMenuPrice();
        return menuListResponse;
     }
