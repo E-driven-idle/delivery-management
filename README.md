@@ -90,7 +90,7 @@
 ### 💬 AI
 - **AI 추천 설명 생성:** 점주가 신메뉴를 등록할 때, 원하면 AI가 추천해주는 해당 메뉴에 대한 설명을 자동으로 기입되도록 할 수 있습니다. 
 - **AI 호출 로그 조회:** 관리자는 요청/응답 내역에 대한 목록 및 단건 조회가 가능합니다.
-- **AI 호출 로그 검색:** 관리자는 로그 응답의 키워드 기반 로그 목록 검색이 가능합니다.
+- **AI 호출 로그 검색:** 관리자는 로그 응답의 키워드 기반 로그 검색이 가능합니다. 리스트 형태로 특정 키워드가 포함된 모든 로그를 조회할 수 있습니다.
 - **AI 호출 로그 삭제/복구:** 관리자는 요청/응답 내역을 삭제 및 복구할 수 있습니다.
 
 ### 🛍️ 결제
@@ -117,7 +117,19 @@
 
 ## 🏗️ 시스템 아키텍처
 
+<details>
+<summary>🔸 v1</summary>
+
 <img src="https://github.com/user-attachments/assets/da2cb565-19b9-4dff-8e12-1be80505844f" width="800" />
+
+</details>
+
+<details>
+<summary>🔸 v2</summary>
+
+
+
+</details>
 
 ### 🔧 인프라 구성 예시
 | 서비스 | 사양 | 역할 |
@@ -129,7 +141,7 @@
 | **S3** | Standard | 사용자 업로드 파일 관리 |
 | **MongoDB Atlas** | - | 채팅 데이터 저장 |
 
-
+<br>
 
 ### 🚀 CI/CD 파이프라인 예시
 
@@ -504,6 +516,30 @@ graph LR
 
 <img src="https://github.com/user-attachments/assets/9df0e12f-c3d5-4a27-830f-2e0c26e3e132" width="800" />
 
+</details>
+
+---
+
+<br>
+
+## 📝 ERD
+
+<details>
+<summary>🔸 v1</summary>
+
+<img src="https://github.com/user-attachments/assets/fe952b02-3eab-4c94-92f1-63a3e2e7c327" width="800" />
+
+</details>
+
+<details>
+<summary>🔸 v2</summary>
+
+<img src="https://github.com/user-attachments/assets/7bcebba7-0269-4275-b80b-75b44d1b3902" width="800" />
+
+</details>
+
+<details>
+<summary>🔸 v3</summary>
 </details>
 
 <br>
