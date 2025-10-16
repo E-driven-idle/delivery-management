@@ -1,4 +1,4 @@
-package com.driven.dm.payment.domain.repository;
+package com.driven.dm.payment.infrastructure.repository;
 
 import java.util.UUID;
 

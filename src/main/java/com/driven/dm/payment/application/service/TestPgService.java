@@ -11,7 +11,7 @@ import com.driven.dm.global.exception.AppException;
 import com.driven.dm.order.application.exception.PaymentErrorCode;
 import com.driven.dm.payment.domain.entity.Payment;
 import com.driven.dm.payment.domain.entity.PaymentStatus;
-import com.driven.dm.payment.domain.repository.PaymentRepository;
+import com.driven.dm.payment.infrastructure.repository.PaymentRepository;
 
 import lombok.RequiredArgsConstructor;
 

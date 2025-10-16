@@ -6,7 +6,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 import org.springframework.stereotype.Component;
 
-import com.driven.dm.payment.domain.repository.IdempotencyStore;
 import com.driven.dm.payment.presentation.response.PaymentResponse;
 
 @Component

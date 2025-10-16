@@ -23,7 +23,7 @@ public class PaymentResponse {
 	private int amount;
 	private LocalDateTime approvedAt;
 	private LocalDateTime refundedAt;
-	private Map<String, Object> summary;
+	private Map<String, Object> details;
 	private LocalDateTime createdAt;
 	private LocalDateTime updatedAt;
 	/* PG 결제창 호출용 토큰 */
@@ -40,7 +40,7 @@ public class PaymentResponse {
 							  .status(payment.getStatus())
 							  .provider(payment.getPgProvider())
 							  .amount(payment.getAmount() != null ? payment.getAmount().intValue() : 0)
-							  .summary(payment.getDetails() != null ? payment.getDetails() : Map.of())
+							  .details(payment.getDetails() != null ? payment.getDetails() : Map.of())
 							  .createdAt(payment.getCreatedAt())
 							  .updatedAt(payment.getUpdatedAt())
 							  .build();
