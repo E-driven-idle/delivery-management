@@ -32,6 +32,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -94,11 +95,7 @@ public class MenuService {
     @Transactional(readOnly = true)
     public Page<MenuListResponse> menuList(SecurityUser securityUser, int page, int size, Sort.Direction direction) {
 
-        int safePage = Math.max(0, page);
-        int safeSize = (size <= 0) ? 10 : size;
-        Sort.Direction safeDir = (direction == null) ? Sort.Direction.DESC : direction;
-
-        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(safeDir, "createdAt"));
+        Pageable pageable = getPageable(page, size, direction);
 
         boolean isPrivileged =
             securityUser.getRole().equals(UserRole.MASTER)
@@ -114,11 +111,7 @@ public class MenuService {
 
     @Transactional(readOnly = true)
     public Page<MenuListResponse> searchByMenuName(String menuName, int page, int size, Sort.Direction direction) {
-        int safePage = Math.max(0, page);
-        int safeSize = (size <= 0) ? 10 : size;
-        Sort.Direction safeDir = (direction == null) ?  Sort.Direction.ASC : direction;
-
-        PageRequest pageable = PageRequest.of(safePage, safeSize, Sort.by(safeDir, "createdAt"));
+        Pageable pageable = getPageable(page, size, direction);
 
         String query = menuName.isEmpty() ? "" : menuName.trim();
         Page<Menu> menuListPage = menuRepository.findByMenuNameContainingAndStatusNot(query, MenuStatus.DELETED, pageable);
@@ -227,6 +220,14 @@ public class MenuService {
             .shopName(shop.getShopName())
             .menus(menuResponses)
             .build();
+    }
+
+    private Pageable getPageable(int page, int size, Sort.Direction direction) {
+        int safePage = Math.max(0, page);
+        int safeSize = (size <= 0) ? 10 : size;
+        Sort.Direction safeDir = (direction == null) ? Direction.DESC : direction;
+
+        return  PageRequest.of(safePage, safeSize, Sort.by(safeDir, "createdAt"));
     }
 
     private Menu getMenu(UUID id) {

@@ -11,6 +11,7 @@ import com.driven.dm.shop.domain.entity.ShopStatus;
 import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
+import com.driven.dm.shop.presentation.dto.response.AdminShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopResponse;
@@ -24,6 +25,11 @@ import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -35,49 +41,45 @@ public class ShopService {
     private final UserRepository userRepository;
 
     @Transactional
-    public ShopCreateResponse createShop(SecurityUser securityUser, ShopCreateRequest shopCreateRequest) {
+    public ShopCreateResponse createShop(SecurityUser securityUser,
+        ShopCreateRequest shopCreateRequest) {
 
         User user = getUser(securityUser);
 
-        boolean isOwner = user.getRole().equals(UserRole.OWNER);
+        boolean isPrivileged =
+            user.getRole().equals(UserRole.OWNER)
+            || user.getRole().equals(UserRole.MANAGER)
+            || user.getRole().equals(UserRole.MASTER);
 
-        if (isOwner) {
-            Shop shop = Shop.of(user, shopCreateRequest);
-            Shop createdShop = shopRepository.save(shop);
-            return ShopCreateResponse.builder()
-                .shopName(createdShop.getShopName())
-                .shopDescription(createdShop.getDescription())
-                .build();
-
-        }else {
+        if (!isPrivileged) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
+
+        Shop shop = Shop.of(user, shopCreateRequest);
+        Shop createdShop = shopRepository.save(shop);
+
+        return ShopCreateResponse.builder()
+            .shopName(createdShop.getShopName())
+            .shopDescription(createdShop.getDescription())
+            .build();
     }
 
     @Transactional(readOnly = true)
-    public List<ShopListResponse> shopList() {
+    public Page<ShopListResponse> shopList(int page, int size, Sort.Direction direction) {
 
-        List<Shop> shopList = shopRepository.findAll();
-        List<ShopListResponse> shopListResponseRequest = new ArrayList<>();
+        Pageable pageable = getPageable(page, size, direction);
 
-        for (Shop openShop : shopList) {
-            if(openShop.getStatus().equals(ShopStatus.OPEN) || openShop.getStatus().equals(ShopStatus.CLOSED)) {
-                ShopListResponse shopListResponse = ShopListResponse.builder()
-                    .shopName(openShop.getShopName())
-                    .description(openShop.getDescription())
-                    .category(openShop.getCategory().toString())
-                    .avgRating(openShop.getAvgRating())
-                    .fullAddress(
-                        openShop.getAddress() != null
-                            ? openShop.getAddress().getFullAddress()
-                            : ""
-                    )
-                    .build();
-                shopListResponseRequest.add(shopListResponse);
-            }
-        }
+        Page<Shop> shopList = shopRepository.findByStatusNot(ShopStatus.DELETED, pageable);
 
-        return shopListResponseRequest;
+        return shopList.map(shop -> ShopListResponse.builder()
+            .shopName(shop.getShopName())
+            .status(shop.getStatus())
+            .description(shop.getDescription())
+            .category(shop.getCategory().toString())
+            .avgRating(shop.getAvgRating())
+            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .build());
+
     }
 
     @Transactional(readOnly = true)
@@ -92,7 +94,7 @@ public class ShopService {
             .map(ShopAddress::getFullAddress)
             .orElse(null);
 
-        return  ShopResponse.builder()
+        return ShopResponse.builder()
             .shopName(shop.getShopName())
             .description(shop.getDescription())
             .category(shop.getCategory())
@@ -103,46 +105,46 @@ public class ShopService {
     }
 
     @Transactional(readOnly = true)
-    public List<ShopListResponse> searchByShopName(String shopName) {
+    public Page<ShopListResponse> searchByShopName(String shopName, int page, int size,
+        Sort.Direction direction) {
 
-        List<Shop> shops = shopRepository.findByShopNameContainingAndStatusNot(shopName, ShopStatus.DELETED);
+        Pageable pageable = getPageable(page, size, direction);
 
-        return shops.stream()
-            .map(shop -> ShopListResponse.builder()
-                .shopName(shop.getShopName())
-                .description(shop.getDescription())
-                .category(shop.getCategory().toString())
-                .avgRating(shop.getAvgRating())
-                .fullAddress(
-                    shop.getAddress() != null
-                        ? shop.getAddress().getFullAddress()
-                        : ""
-                )
-                .build())
-            .toList();
+        Page<Shop> shops = shopRepository.findByShopNameContainingAndStatusNot(shopName,
+            ShopStatus.DELETED, pageable);
+
+        return shops.map(shop -> ShopListResponse.builder()
+            .shopName(shop.getShopName())
+            .status(shop.getStatus())
+            .description(shop.getDescription())
+            .category(shop.getCategory().toString())
+            .avgRating(shop.getAvgRating())
+            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .build());
+
     }
 
     @Transactional(readOnly = true)
-    public List<ShopListResponse> searchByCategory(ShopCategory category) {
-        List<Shop> shopList = shopRepository.findByCategoryAndStatusNot(category, ShopStatus.DELETED);
+    public Page<ShopListResponse> searchByCategory(ShopCategory category, int page, int size, Sort.Direction direction) {
 
-        return shopList.stream()
-            .map(shop -> ShopListResponse.builder()
-                .shopName(shop.getShopName())
-                .description(shop.getDescription())
-                .category(shop.getCategory().toString())
-                .avgRating(shop.getAvgRating())
-                .fullAddress(
-                    shop.getAddress() != null
-                        ? shop.getAddress().getFullAddress()
-                        : ""
-                )
-                .build())
-            .toList();
+        Pageable pageable = getPageable(page, size, direction);
+
+        Page<Shop> shopList = shopRepository.findByCategoryAndStatusNot(category,
+            ShopStatus.DELETED, pageable);
+
+        return shopList.map(shop -> ShopListResponse.builder()
+            .shopName(shop.getShopName())
+            .status(shop.getStatus())
+            .description(shop.getDescription())
+            .category(shop.getCategory().toString())
+            .avgRating(shop.getAvgRating())
+            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .build());
     }
 
     @Transactional
-    public ShopUpdateResponse updateShop(UUID id, SecurityUser securityUser, ShopUpdateRequest shopUpdateRequest) {
+    public ShopUpdateResponse updateShop(UUID id, SecurityUser securityUser,
+        ShopUpdateRequest shopUpdateRequest) {
         Shop shop = getShop(id);
         User user = getUser(securityUser);
 
@@ -150,18 +152,25 @@ public class ShopService {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }
 
-        if (isOwner(user, shop)) {
-            shop.update(shopUpdateRequest.getShopName(), shopUpdateRequest.getDescription(), shopUpdateRequest.getStatus(), shopUpdateRequest.getCategory());
-            Shop updatedShop = shopRepository.save(shop);
-            return ShopUpdateResponse.builder()
-                .shopName(updatedShop.getShopName())
-                .description(updatedShop.getDescription())
-                .shopStatus(updatedShop.getStatus())
-                .category(updatedShop.getCategory())
-                .build();
-        } else {
+        boolean isPrivileged =
+            isOwner(user, shop)
+            || user.getRole().equals(UserRole.MANAGER)
+            || user.getRole().equals(UserRole.MASTER);
+
+        if (!isPrivileged) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
+
+        shop.update(shopUpdateRequest.getShopName(), shopUpdateRequest.getDescription(),
+            shopUpdateRequest.getStatus(), shopUpdateRequest.getCategory());
+        Shop updatedShop = shopRepository.save(shop);
+
+        return ShopUpdateResponse.builder()
+            .shopName(updatedShop.getShopName())
+            .description(updatedShop.getDescription())
+            .shopStatus(updatedShop.getStatus())
+            .category(updatedShop.getCategory())
+            .build();
     }
 
     @Transactional
@@ -174,12 +183,38 @@ public class ShopService {
             || user.getRole().equals(UserRole.MANAGER)
             || user.getRole().equals(UserRole.MASTER);
 
-        if (privileges) {
-            Shop deleteShop = shop.deleteShop(user.getId());
-            shopRepository.save(deleteShop);
-        } else {
+        if (!privileges) {
             throw new AppException(ApiErrorCode.FORBIDDEN);
         }
+
+        Shop deleteShop = shop.deleteShop(user.getId());
+        shopRepository.save(deleteShop);
+    }
+
+    @Transactional
+    public Page<AdminShopListResponse> adminShopList(int page, int size, Direction direction) {
+
+        Pageable pageable = getPageable(page, size, direction);
+
+        Page<Shop> shopList = shopRepository.findAll(pageable);
+
+        return shopList.map(shop -> AdminShopListResponse.builder()
+            .shopId(shop.getId())
+            .status(shop.getStatus())
+            .shopName(shop.getShopName())
+            .description(shop.getDescription())
+            .category(shop.getCategory().toString())
+            .avgRating(shop.getAvgRating())
+            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .build());
+    }
+
+    private Pageable getPageable(int page, int size, Sort.Direction direction) {
+        int safePage = Math.max(0, page);
+        int safeSize = (size <= 0) ? 10 : size;
+        Sort.Direction safeDir = (direction == null) ? Sort.Direction.DESC : direction;
+
+        return PageRequest.of(safePage, safeSize, Sort.by(safeDir, "createdAt"));
     }
 
     private User getUser(SecurityUser securityUser) {
@@ -197,12 +232,11 @@ public class ShopService {
 
     private boolean isOwner(User user, Shop shop) {
 
-        if( !user.getRole().equals(UserRole.OWNER)
-            || !user.getId().equals(shop.getOwner().getId())){
+        if (!user.getRole().equals(UserRole.OWNER)
+            || !user.getId().equals(shop.getOwner().getId())) {
             return false;
         } else {
             return true;
         }
     }
-
 }

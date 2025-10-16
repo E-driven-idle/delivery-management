@@ -1,5 +1,6 @@
 package com.driven.dm.payment.domain.entity;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.UUID;
 
@@ -60,11 +61,17 @@ public class Payment extends BaseEntity {
 	@Column(name = "idemKey")
 	private String idemKey;
 
-	@Column(name = "pgProvier")
+	@Column(name = "pgProvider")
 	private String pgProvider;
 
 	@Column(name = "transaction_id")
 	private String transactionId;
+
+	@Column(name = "failure_reason", length = 200)
+	private String failureReason;  // 실패/취소 사유(DECLINED/CANCELED 시)
+
+	@Column(name = "approved_at")
+	private LocalDateTime approvedAt;
 
 	@JdbcTypeCode(SqlTypes.JSON)
 	@Column(name = "details", columnDefinition = "jsonb", nullable = false)
@@ -75,12 +82,26 @@ public class Payment extends BaseEntity {
 		Payment payment = new Payment();
 		payment.user = loginUser;
 		payment.order = order;
-		payment.status = PaymentStatus.CREATED;
+		payment.status = PaymentStatus.PAYMENT_PENDING;
 		payment.method = request.getMethod();
 		payment.amount = request.getAmount();
 		payment.idemKey = idemKey;
 		payment.pgProvider = "inhouse-mock"; // 임시 제공자
 		payment.details = details;
 		return payment;
+	}
+
+	public void approve(String pgTid) {
+		this.status = PaymentStatus.PAYMENT_APPROVED;
+		this.transactionId = pgTid; // 테스트라서 null. 원래는 id값을 넣어줘야함.
+		this.approvedAt = LocalDateTime.now();
+	}
+	public void decline(String reason) {
+		this.status = PaymentStatus.PAYMENT_DECLINED;
+		this.failureReason = reason;
+	}
+	public void cancel(String reason) {
+		this.status = PaymentStatus.PAYMENT_CANCELED;
+		this.failureReason = reason;
 	}
 }
