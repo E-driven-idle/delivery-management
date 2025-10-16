@@ -3,3 +3,8 @@ spring:
     name: delivery-management
   profiles:
     active: develop
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,configprops
