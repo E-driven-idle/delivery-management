@@ -2,4 +2,4 @@ spring:
   application:
     name: delivery-management
   profiles:
-    active: local
+    active: develop
