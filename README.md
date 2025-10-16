@@ -8,7 +8,6 @@
 
 🍰**고객과 사장님 모두 이용할 수 있는 배달 관리 웹 플랫폼**🍰
 
-[🌐 사이트 바로가기]() | [📖 API 문서]()
 </div>
 
 ## 💡 프로젝트 소개
@@ -90,7 +89,9 @@
 
 ### 💬 AI
 - **AI 추천 설명 생성:** 점주가 신메뉴를 등록할 때, 원하면 AI가 추천해주는 해당 메뉴에 대한 설명을 자동으로 기입되도록 할 수 있습니다. 
-- **AI 호출 로그 관리:** 관리자는 요청/응답 로그에 대한 목록/단건 조회, 키워드 기반 검색, 삭제/복구 할 수 있습니다.
+- **AI 호출 로그 조회:** 관리자는 요청/응답 내역에 대한 목록 및 단건 조회가 가능합니다.
+- **AI 호출 로그 검색:** 관리자는 로그 응답의 키워드 기반 로그 목록 검색이 가능합니다.
+- **AI 호출 로그 삭제/복구:** 관리자는 요청/응답 내역을 삭제 및 복구할 수 있습니다.
 
 ### 🛍️ 결제
 - **기능 이름:** 
@@ -98,14 +99,14 @@
 - **기능 이름:** 
 
 ### 🛒 장바구니
-- **기능 이름:** 
-- **기능 이름:** 
-- **기능 이름:** 
+- **장바구니 담기:** 사용자는 원하는 메뉴를 장바구니에 추가할 수 있습니다. 이미 담은 메뉴의 수량을 변경하거나 중복 메뉴를 자동으로 병합할 수 있습니다.
+- **장바구니 조회:** 사용자는 자신의 장바구니 목록을 조회하여 현재 담긴 메뉴, 수량, 총 금액을 확인할 수 있습니다.
+- **장바구니 비우기 및 삭제:** 사용자는 장바구니의 특정 메뉴를 삭제하거나 전체 항목을 비울 수 있습니다.
 
 ### ⭐ 리뷰
-- **기능 이름:** 
-- **기능 이름:** 
-- **리뷰 평점:** 
+- **리뷰 작성:** 사용자는 주문 완료 후 해당 메뉴나 가게에 대한 리뷰를 작성할 수 있습니다. 별점(1~5점)과 텍스트를 함께 저장하며, 주문 기록과 연동됩니다.
+- **리뷰 수정/삭제:** 사용자는 본인이 작성한 리뷰를 수정하거나 삭제할 수 있습니다.
+- **리뷰 평점 계산:** 각 가게의 리뷰가 추가·수정·삭제될 때마다 평균 평점이 자동 갱신되어, 가게 상세 조회 시 최신 평점이 반영됩니다.
 
 ### ⚙️ 기타 기능
 - **유저 인증/인가:** 로그인 여부 판단 및 로그인한 유저의 권한 기반 리소스 접근을 제어할 수 있습니다.
@@ -411,24 +412,99 @@ graph LR
 
 <br>
 
-## 📝 API 문서 예시
+## 📝 API 문서
+<details>
+<summary>🔸 User</summary>
 
-자세한 API 문서는 [Postman Documentation]()에서 확인하실 수 있습니다.
+<img src="https://github.com/user-attachments/assets/e78c1bbe-a36d-480e-9e87-7e1509423d59" width="800" />
+<br>
 
-### 주요 API 엔드포인트
+<img src="https://github.com/user-attachments/assets/4c51567f-9610-4d6b-9ccb-60e698cdb15f" width="800" />
+<br>
 
-| 기능 | Method | Endpoint | 설명 |
-|------|--------|----------|------|
-| 로그인 | GET | `/oauth2/authorization/google` | Google OAuth2 로그인 |
-| 반려동물 등록 | POST | `/pet` | 사용자의 반려동물 등록 |
-| 앨범 조회 | GET | `/users/my/albums` | 사용자가 기록한 사진 전체 조회 |
-| 데일리 질문 | GET | `/daily-questions/today` | 오늘의 질문 조회|
-| 플레이스 검색 | GET | `/places` | 반려동물 동반 장소 조회 |
-| 게시글 목록 | GET | `/owner-boards` | 커뮤니티 게시글 전체 조회|
-| 채팅 시작 | GET | `/chat/{chatId}` | 채팅방 입장 |
-| 알림 전체 조회 | GET | `/notifications` | 오늘의 질문 알림 조회|
-| 일정 생성 | POST | `/users/events` | 일정 생성 |
+<img src="https://github.com/user-attachments/assets/73c0ee9b-3c09-4893-970b-b4c13ba5bf5e" width="800" />
 
+</details>
+
+<details>
+<summary>🔸 Shop</summary>
+
+<img src="https://github.com/user-attachments/assets/ea33a54b-9618-4ac8-8d16-6cc5f13351b0" width="800" />
+<br>
+
+<img src="https://github.com/user-attachments/assets/c8f7d674-2bc9-40fc-a954-e8f7eacda686" width="800" />
+
+</details>
+
+<details>
+<summary>🔸 Address</summary>
+
+<img src="https://github.com/user-attachments/assets/713c497a-d043-4b55-8b2e-0b313ab5e978" width="800" />
+<br>
+
+<img src="https://github.com/user-attachments/assets/86c64285-3a4b-408d-813d-2e39338f067f" width="800" />
+
+</details>
+
+<details>
+<summary>🔸 Menu</summary>
+
+<img src="https://github.com/user-attachments/assets/f6c5d157-6e01-4080-8dd6-606d9d4c5b88" width="800" />
+
+</details>
+
+<details>
+<summary>🔸 Order</summary>
+
+<img src="https://github.com/user-attachments/assets/2ddb7f83-2800-455d-a978-61d2f5af3fea" width="800" />
+<br>
+
+<img src="https://github.com/user-attachments/assets/c6f45944-9c7e-4f86-83bd-674f632928d8" width="800" />
+
+</details>
+
+<details>
+<summary>🔸 Cart</summary>
+
+<img src="https://github.com/user-attachments/assets/b16ff95c-2e16-402b-8ab9-405034b78c2e" width="800" />
+<br>
+
+<img src="https://github.com/user-attachments/assets/512d6744-86e0-44d1-b570-53bf3b084f40" width="800" />
+<br>
+
+<img src="https://github.com/user-attachments/assets/7efe4d98-b535-4a61-ac62-0663077cdc39" width="800" />
+
+</details>
+
+<details>
+<summary>🔸 Payment</summary>
+
+<img src="https://github.com/user-attachments/assets/62de454b-5499-448e-b941-b7e42d4375f2" width="800" />
+
+</details>
+
+<details>
+<summary>🔸 Review</summary>
+
+<img src="https://github.com/user-attachments/assets/782cbb60-1123-45be-83dd-4fc80a849f3f" width="800" />
+<br>
+
+<img src="https://github.com/user-attachments/assets/ecb4b755-534e-487a-9946-1c9904d3a329" width="800" />
+
+</details>
+
+<details>
+<summary>🔸 Ai</summary>
+
+<img src="https://github.com/user-attachments/assets/cabe879d-462e-4625-a6a3-45e7255f6f21" width="800" />
+<br>
+
+<img src="https://github.com/user-attachments/assets/c8cfc8b3-9100-42a6-9ae0-559390a21380" width="800" />
+<br>
+
+<img src="https://github.com/user-attachments/assets/9df0e12f-c3d5-4a27-830f-2e0c26e3e132" width="800" />
+
+</details>
 
 <br>
 
