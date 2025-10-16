@@ -53,6 +53,12 @@ dependencies {
 
     // OpenAI
     implementation 'org.springframework.ai:spring-ai-starter-model-openai'
+
+    // Resilience4j
+    implementation 'io.github.resilience4j:resilience4j-spring-boot3:2.2.0'
+
+    // AOP
+    implementation 'org.springframework.boot:spring-boot-starter-aop'
 }
 
 dependencyManagement {
