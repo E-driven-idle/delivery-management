@@ -19,6 +19,7 @@ import com.driven.dm.ai.presentation.dto.response.AiCallResponseDto;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.user.application.service.UserReader;
 import com.driven.dm.user.domain.entity.User;
+import java.lang.reflect.Method;
 import java.util.List;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
@@ -95,25 +96,29 @@ class AiServiceTest {
         }
 
         @Test
-        @DisplayName("메뉴 설명 생성 실패: 예외 발생 시 fallback 문구로 저장된다")
-        void generateMenuDescription_fallback_onException() {
+        @DisplayName("fallback 메서드 동작 검증: 리플렉션으로 직접 호출 시 대체 문구로 저장된다")
+        void generateMenuDescriptionFallback_saves_fallback_text() throws Exception {
 
             // [given]
             UUID userId = UUID.randomUUID();
             User owner = mock(User.class);
-            when(userReader.findActiveUser(userId))
-                .thenReturn(owner);
+            when(userReader.findActiveUser(userId)).thenReturn(owner);
 
             String menuName = "크림파스타";
             String category = "양식";
             String features = "생크림, 파르미지아노";
 
-            when(chatClient.prompt().user(anyString()).call().content())
-                .thenThrow(new RuntimeException("OpenAI down"));
+            // [when] private fallback 메서드를 리플렉션으로 직접 호출
+            Method m = AiService.class.getDeclaredMethod(
+                "generateMenuDescriptionFallback",
+                UUID.class, String.class, String.class, String.class, Throwable.class
+            );
+            m.setAccessible(true);
 
-            // [when]
-            AiCallResponseDto dto = aiService.generateMenuDescription(userId, menuName, category,
-                features);
+            AiCallResponseDto dto = (AiCallResponseDto) m.invoke(
+                aiService,
+                userId, menuName, category, features, new RuntimeException("OpenAI down")
+            );
 
             // [then]
             String expectedFallback = menuName + "은(는) 신선한 재료로 만든 담백한 맛이 특징입니다.";

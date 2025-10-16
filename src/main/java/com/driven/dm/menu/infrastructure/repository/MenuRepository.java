@@ -1,10 +1,18 @@
 package com.driven.dm.menu.infrastructure.repository;
 
 import com.driven.dm.menu.domain.entity.Menu;
+import com.driven.dm.menu.domain.entity.MenuStatus;
+import com.driven.dm.menu.presentation.dto.response.MenuListResponse;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
+import java.util.Set;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 public interface MenuRepository extends JpaRepository<Menu, UUID> {
 
@@ -12,4 +20,14 @@ public interface MenuRepository extends JpaRepository<Menu, UUID> {
     Optional<Menu> findByIdAndShop_Id(UUID menuId, UUID shopId);
 
     List<Menu> findAllByIdInAndShopIdAndDeletedAtIsNull(List<UUID> menuIds, UUID shopId);
+
+
+    @Query("""
+        SELECT m FROM Menu m
+        WHERE LOWER(m.menuName) LIKE LOWER(CONCAT('%', :menuName, '%'))
+        AND m.status <> :status
+        """)
+    Page<Menu> findByMenuNameContainingAndStatusNot(@Param("menuName") String menuName, @Param("status") MenuStatus status,  Pageable pageable);
+
+    Page<Menu> findByStatusIn(Collection<MenuStatus> statuses, Pageable pageable);
 }

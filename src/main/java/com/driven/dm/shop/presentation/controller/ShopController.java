@@ -8,6 +8,7 @@ import com.driven.dm.shop.presentation.dto.request.ShopAddressCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopAddressUpdateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
+import com.driven.dm.shop.presentation.dto.response.AdminShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopAddressResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
@@ -17,8 +18,11 @@ import jakarta.validation.Valid;
 import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -49,23 +53,35 @@ public class ShopController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<ShopListResponse>> searchByShopName (@RequestParam("shopName") String shopName) {
-
-        List<ShopListResponse> shopListResponse = shopService.searchByShopName(shopName);
+    public ResponseEntity<Page<ShopListResponse>> searchByShopName (
+        @RequestParam("shopName") String shopName,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "DESC")Sort.Direction direction
+        )
+    {
+        Page<ShopListResponse> shopListResponse = shopService.searchByShopName(shopName, page, size, direction);
         return ResponseEntity.ok().body(shopListResponse);
     }
 
     @GetMapping("/category")
-    public ResponseEntity<List<ShopListResponse>> searchByCategory(
-        @RequestParam("category")ShopCategory category
+    public ResponseEntity<Page<ShopListResponse>> searchByCategory(
+        @RequestParam("category")ShopCategory category,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "DESC") Sort.Direction direction
     ) {
-        List<ShopListResponse> shopListResponse = shopService.searchByCategory(category);
+        Page<ShopListResponse> shopListResponse = shopService.searchByCategory(category, page, size, direction);
         return ResponseEntity.ok().body(shopListResponse);
     }
 
     @GetMapping
-    public ResponseEntity<List<ShopListResponse>> shopList(){
-        List<ShopListResponse> shopListResponse = shopService.shopList();
+    public ResponseEntity<Page<ShopListResponse>> shopList(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "DESC") Sort.Direction direction
+    ){
+        Page<ShopListResponse> shopListResponse = shopService.shopList(page, size, direction);
 
         return ResponseEntity.ok().body(shopListResponse);
     }
@@ -108,6 +124,17 @@ public class ShopController {
         ShopAddressResponse shopAddressResponse = shopAddressService.createAddress(id, securityUser, shopAddressCreateRequest);
 
         return ResponseEntity.status(HttpStatus.CREATED).body(shopAddressResponse);
+    }
+
+    @PreAuthorize("hasAnyRole('MANAGER', 'MASTER')")
+    @GetMapping("/admin")
+    public ResponseEntity<Page<AdminShopListResponse>>  searchByAdmin(
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size,
+        @RequestParam(defaultValue = "DESC") Sort.Direction direction
+    ) {
+        Page<AdminShopListResponse> shopListResponses = shopService.adminShopList(page, size, direction);
+        return  ResponseEntity.ok().body(shopListResponses);
     }
 
     @PutMapping("/{id}/address")

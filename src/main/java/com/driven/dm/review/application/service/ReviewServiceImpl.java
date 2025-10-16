@@ -68,6 +68,9 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         reviewRepository.saveAndFlush(review);
+
+        recalcAndSaveShopAvg(shop.getId());
+
         return ReviewResponse.from(review);
     }
 
@@ -115,6 +118,9 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         reviewRepository.saveAndFlush(review);
+
+        recalcAndSaveShopAvg(review.getShop().getId());
+
         return ReviewResponse.from(review);
     }
 
@@ -132,5 +138,17 @@ public class ReviewServiceImpl implements ReviewService {
         }
 
         review.delete(userId);
+        reviewRepository.flush();
+
+        recalcAndSaveShopAvg(review.getShop().getId());
+    }
+
+    private void recalcAndSaveShopAvg(UUID shopId) {
+        Double avg = reviewRepository.getAvgRatingOfShop(shopId);
+        Shop shop = shopRepository.findById(shopId)
+            .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
+
+        shop.updateAvgRating(avg);
+        shopRepository.saveAndFlush(shop);
     }
 }
