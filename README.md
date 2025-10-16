@@ -52,6 +52,7 @@
 ### DevOps & Infrastructure
 ![GitHub Actions](https://img.shields.io/badge/GitHub%20Actions-2088FF?style=for-the-badge&logo=github-actions)
 ![AWS EC2](https://img.shields.io/badge/AWS%20EC2-FF9900?style=for-the-badge&logo=amazon-aws)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 
 ### Test
 ![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman)
@@ -78,33 +79,33 @@
 ## ✨ 핵심 기능
 
 ### 🍙 주문
-- **기능 이름:**
-- **기능 이름:**
-- **기능 이름:**
+- **기능 이름:** 
+- **기능 이름:** 
+- **기능 이름:** 
 
 ### 🏠 가게
-- **가게 관리:**
-- **가게 평점:**
-- **기능 이름:**
+- **가게 관리:** 
+- **가게 평점:** 
+- **가게 주소 등록:** 
 
 ### 💬 AI
 - **AI 추천 설명 생성:** 점주가 신메뉴를 등록할 때, 원하면 AI가 추천해주는 해당 메뉴에 대한 설명을 자동으로 기입되도록 할 수 있습니다. 
 - **AI 호출 로그 관리:** 관리자는 요청/응답 로그에 대한 목록/단건 조회, 키워드 기반 검색, 삭제/복구 할 수 있습니다.
 
 ### 🛍️ 결제
-- **기능 이름:**
-- **기능 이름:**
-- **기능 이름:**
+- **기능 이름:** 
+- **기능 이름:** 
+- **기능 이름:** 
 
 ### 🛒 장바구니
-- **기능 이름:**
-- **기능 이름:**
+- **기능 이름:** 
+- **기능 이름:** 
 - **기능 이름:** 
 
 ### ⭐ 리뷰
-- **기능 이름:**
-- **기능 이름:**
-- **리뷰 평점:**
+- **기능 이름:** 
+- **기능 이름:** 
+- **리뷰 평점:** 
 
 ### ⚙️ 기타 기능
 - **유저 인증/인가:** 로그인 여부 판단 및 로그인한 유저의 권한 기반 리소스 접근을 제어할 수 있습니다.
@@ -410,7 +411,7 @@ graph LR
 
 <br>
 
-## 📝 API 문서
+## 📝 API 문서 예시
 
 자세한 API 문서는 [Postman Documentation]()에서 확인하실 수 있습니다.
 
@@ -433,13 +434,13 @@ graph LR
 
 ## 👥 팀원 소개
 
-| 역할 | 이름  | 담당 기능                                   | GitHub                              |
-|------|-----|-----------------------------------------|-------------------------------------|
+| 역할 | 이름  | 담당 기능                                | GitHub                              |
+|------|-----|--------------------------------------|-------------------------------------|
 | **BE 개발자** | 류창희 | 팀장, Shop 도메인, Menu 도메인, KaKaoMap API 연동 | [🍀](https://github.com/changhui98) |
-| **BE 개발자** | 오세준 | 테크리더, User 도메인, 인증/보안, 회원 권한 기준 인가      | [🍀](github.com/sejunO)             |
-| **BE 개발자** | 김하정 | Ai 도메인, OpenAI API 연동                   | [🍀](https://github.com/mueiso)     |
-| **BE 개발자** | 천세경 | Payment 도메인, Toss payments API 연동       | [🍀](https://github.com/GyeongSe99) |
-| **BE 개발자** | 박준형 | Cart 도메인, Review 도메인                    | [🍀](https://github.com/wnsgud0310) |
+| **BE 개발자** | 오세준 | 테크리더, User 도메인, 인증/인가, CI/CD         | [🍀](github.com/sejunO)             |
+| **BE 개발자** | 김하정 | Ai 도메인, OpenAI API 연동                | [🍀](https://github.com/mueiso)     |
+| **BE 개발자** | 천세경 | Payment 도메인, Toss payments API 연동    | [🍀](https://github.com/GyeongSe99) |
+| **BE 개발자** | 박준형 | Cart 도메인, Review 도메인                 | [🍀](https://github.com/wnsgud0310) |
 
 <br>
 

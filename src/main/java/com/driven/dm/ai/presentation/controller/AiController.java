@@ -72,21 +72,6 @@ public class AiController {
     }
 
     /**
-     * [AI 호출 로그 단건 조회]
-     * MASTER, MANAGER 접근 가능
-     *
-     * @param id 조회할 로그의 UUID
-     * @return 조회된 로그 정보를 담은 DTO 객체
-     */
-    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
-    @GetMapping("/logs/{id}")
-    public ResponseEntity<AiCallLogResponseDto> getAiCallLog(
-        @PathVariable("id") UUID id) {
-
-        return ResponseEntity.ok(aiService.getAiCallLog(id));
-    }
-
-    /**
      * [AI 호출 로그 검색 조회]
      * MASTER, MANAGER 접근 가능
      * 출력 텍스트(output_text) 내용에 주어진 키워드가 포함된 로그만 조회
@@ -104,6 +89,21 @@ public class AiController {
         @RequestParam(value = "pageSize", defaultValue = "10") Long pageSize) {
 
         return ResponseEntity.ok(aiService.searchLogByContent(content, page, pageSize));
+    }
+
+    /**
+     * [AI 호출 로그 단건 조회]
+     * MASTER, MANAGER 접근 가능
+     *
+     * @param id 조회할 로그의 UUID
+     * @return 조회된 로그 정보를 담은 DTO 객체
+     */
+    @PreAuthorize("hasAnyRole('MASTER', 'MANAGER')")
+    @GetMapping("/logs/{id}")
+    public ResponseEntity<AiCallLogResponseDto> getAiCallLog(
+        @PathVariable("id") UUID id) {
+
+        return ResponseEntity.ok(aiService.getAiCallLog(id));
     }
 
     /**
