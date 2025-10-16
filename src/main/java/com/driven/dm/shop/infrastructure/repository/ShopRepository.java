@@ -6,6 +6,8 @@ import com.driven.dm.shop.domain.entity.ShopStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -22,7 +24,7 @@ public interface ShopRepository extends JpaRepository<Shop, UUID> {
           WHERE LOWER(s.shopName) LIKE LOWER(CONCAT('%', :shopName, '%'))
           AND s.status <> :status
           """)
-    List<Shop> findByShopNameContainingAndStatusNot(@Param("shopName") String shopName, @Param("status") ShopStatus status);
+    Page<Shop> findByShopNameContainingAndStatusNot(@Param("shopName") String shopName, @Param("status") ShopStatus status, Pageable pageable);
 
     @Query("""
           SELECT s
@@ -30,6 +32,8 @@ public interface ShopRepository extends JpaRepository<Shop, UUID> {
           WHERE s.category = :category
           AND s.status <> :status
           """)
-    List<Shop> findByCategoryAndStatusNot(ShopCategory category,  ShopStatus status);
+    Page<Shop> findByCategoryAndStatusNot(ShopCategory category,  ShopStatus status, Pageable pageable);
+
+    Page<Shop> findByStatusNot(ShopStatus status, Pageable pageable);
 
 }
