@@ -1,7 +1,16 @@
 package com.driven.dm.payment.domain.entity;
 
+import java.util.Map;
+import java.util.UUID;
+
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+
+import com.driven.dm.global.entity.BaseEntity;
 import com.driven.dm.order.domain.entity.Order;
+import com.driven.dm.payment.presentation.request.PaymentCreateRequest;
 import com.driven.dm.user.domain.entity.User;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -13,7 +22,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.Table;
-import java.util.UUID;
 import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -24,34 +32,55 @@ import lombok.ToString;
 @ToString
 @Table(name = "p_payment")
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
-public class Payment {
-    @Id
-    @GeneratedValue(strategy = GenerationType.UUID)
-    @Column(name = "payment_id", nullable = false, updatable = false)
-    private UUID id;
+public class Payment extends BaseEntity {
+	@Id
+	@GeneratedValue(strategy = GenerationType.UUID)
+	@Column(name = "payment_id", nullable = false, updatable = false)
+	private UUID id;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "user_id", nullable = false)
-    private User user;
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "user_id", nullable = false)
+	private User user;
 
-    @ManyToOne(fetch = FetchType.LAZY, optional = false)
-    @JoinColumn(name = "order_id", nullable = false)
-    private Order order;
+	@ManyToOne(fetch = FetchType.LAZY, optional = false)
+	@JoinColumn(name = "order_id", nullable = false)
+	private Order order;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "status")
-    private PaymentStatus status;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "status")
+	private PaymentStatus status;
 
-    @Enumerated(EnumType.STRING)
-    @Column(name = "method")
-    private PaymentMethod method;
+	@Enumerated(EnumType.STRING)
+	@Column(name = "method")
+	private PaymentMethod method;
 
-    @Column(name = "amount")
-    private Long amount;
+	@Column(name = "amount")
+	private Long amount;
 
-    @Column(name = "pgProvier")
-    private String pgProvider;
+	@Column(name = "idemKey")
+	private String idemKey;
 
-    @Column(name = "transaction_id")
-    private String transactionId;
+	@Column(name = "pgProvier")
+	private String pgProvider;
+
+	@Column(name = "transaction_id")
+	private String transactionId;
+
+	@JdbcTypeCode(SqlTypes.JSON)
+	@Column(name = "details", columnDefinition = "jsonb", nullable = false)
+	private Map<String, Object> details;
+
+	public static Payment of(PaymentCreateRequest request, User loginUser, Order order, String idemKey,
+							 Map<String, Object> details) {
+		Payment payment = new Payment();
+		payment.user = loginUser;
+		payment.order = order;
+		payment.status = PaymentStatus.CREATED;
+		payment.method = request.getMethod();
+		payment.amount = request.getAmount();
+		payment.idemKey = idemKey;
+		payment.pgProvider = "inhouse-mock"; // 임시 제공자
+		payment.details = details;
+		return payment;
+	}
 }

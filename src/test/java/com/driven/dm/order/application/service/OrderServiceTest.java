@@ -7,7 +7,7 @@ import static org.mockito.Mockito.mock;
 
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
-import com.driven.dm.menu.domain.repository.MenuRepository;
+import com.driven.dm.menu.infrastructure.repository.MenuRepository;
 import com.driven.dm.order.application.exception.OrderErrorCode;
 import com.driven.dm.order.domain.entity.Order;
 import com.driven.dm.order.domain.entity.OrderStatus;
@@ -17,10 +17,11 @@ import com.driven.dm.order.presentation.dto.request.OrderCreateRequest;
 import com.driven.dm.order.presentation.dto.request.OrderMenuCreateRequest;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopStatus;
-import com.driven.dm.shop.domain.repository.ShopRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.user.application.service.UserReader;
 import com.driven.dm.user.domain.entity.User;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
@@ -31,6 +32,7 @@ import org.mockito.ArgumentCaptor;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.test.util.ReflectionTestUtils;
 
 @ExtendWith(MockitoExtension.class)
@@ -50,6 +52,9 @@ class OrderServiceTest {
 
     @Mock
     UserReader userReader;
+
+    @Mock
+    ApplicationEventPublisher eventPublisher;
 
     @Nested
     class createOrder {
@@ -92,7 +97,7 @@ class OrderServiceTest {
             given(mockShop.getId()).willReturn(shopId);
             given(mockShop.getStatus()).willReturn(ShopStatus.OPEN);
 
-            given(shopRepository.selectShop(shopId)).willReturn(mockShop);
+            given(shopRepository.findById(shopId)).willReturn(Optional.of(mockShop));
             given(menuRepository.findAllByIdInAndShopIdAndDeletedAtIsNull(
                 request.orderMenus().stream().map(OrderMenuCreateRequest::menuId).toList(),
                 shopId)).willReturn(List.of(menu));
@@ -120,7 +125,7 @@ class OrderServiceTest {
             Shop mockShop = mock(Shop.class);
             given(mockShop.getStatus()).willReturn(ShopStatus.CLOSED);
 
-            given(shopRepository.selectShop(shopId)).willReturn(mockShop);
+            given(shopRepository.findById(shopId)).willReturn(Optional.of(mockShop));
 
             assertThatThrownBy(() -> {
                 orderService.createOrder(request);
@@ -134,7 +139,7 @@ class OrderServiceTest {
             given(mockShop.getId()).willReturn(shopId);
             given(mockShop.getStatus()).willReturn(ShopStatus.OPEN);
 
-            given(shopRepository.selectShop(shopId)).willReturn(mockShop);
+            given(shopRepository.findById(shopId)).willReturn(Optional.of(mockShop));
             given(menuRepository.findAllByIdInAndShopIdAndDeletedAtIsNull(
                 request.orderMenus().stream().map(OrderMenuCreateRequest::menuId).toList(),
                 shopId)).willReturn(List.of());
@@ -161,7 +166,7 @@ class OrderServiceTest {
 
             given(mockShop.getId()).willReturn(shopId);
             given(mockShop.getStatus()).willReturn(ShopStatus.OPEN);
-            given(shopRepository.selectShop(shopId)).willReturn(mockShop);
+            given(shopRepository.findById(shopId)).willReturn(Optional.of(mockShop));
             given(menuRepository.findAllByIdInAndShopIdAndDeletedAtIsNull(
                 request.orderMenus().stream().map(OrderMenuCreateRequest::menuId).toList(),
                 shopId)).willReturn(List.of(menu));

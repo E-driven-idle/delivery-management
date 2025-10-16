@@ -2,7 +2,7 @@ package com.driven.dm.order.application.service;
 
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
-import com.driven.dm.menu.domain.repository.MenuRepository;
+import com.driven.dm.menu.infrastructure.repository.MenuRepository;
 import com.driven.dm.order.application.exception.OrderErrorCode;
 import com.driven.dm.order.domain.entity.Order;
 import com.driven.dm.order.domain.entity.OrderMenu;
@@ -13,11 +13,12 @@ import com.driven.dm.order.infrastructure.repository.OrderRepository;
 import com.driven.dm.order.presentation.dto.request.OrderCreateRequest;
 import com.driven.dm.order.presentation.dto.request.OrderMenuCreateRequest;
 import com.driven.dm.order.presentation.dto.request.OrderUpdateRequest;
+import com.driven.dm.order.presentation.dto.response.OrderPageResponse;
 import com.driven.dm.order.presentation.dto.response.OrderResponse;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopStatus;
-import com.driven.dm.shop.domain.repository.ShopRepository;
+import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.user.application.service.UserReader;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.presentation.dto.ApiUser;
@@ -91,6 +92,46 @@ public class OrderService {
         return OrderResponse.of(order);
     }
 
+    @Transactional(readOnly = true)
+    public OrderPageResponse getOrders(UUID userId, Long page, Long pageSize) {
+        List<Order> orders = orderRepository.findAll(userId, (page - 1) * pageSize, pageSize);
+
+        return OrderPageResponse.of(
+            orders.stream()
+                .map(OrderResponse::of)
+                .toList(),
+            orderRepository.count(userId)
+        );
+    }
+
+    @Transactional(readOnly = true)
+    public OrderResponse getOrder(UUID orderId, UUID userId) {
+        Order order = orderRepository.findByIdAndUser_Id(orderId, userId).orElseThrow(() -> {
+            throw AppException.of(OrderErrorCode.ORDER_NOT_FOUND);
+        });
+        return OrderResponse.of(order);
+    }
+
+    @Transactional
+    public UUID cancelOrder(UUID orderId, ApiUser apiUser) {
+        Order order = findOrderOrThrow(orderId);
+
+        orderStatusTransitionPolicy.assertCanCancel(order, apiUser.userId(), apiUser.role());
+
+        order.cancel();
+        return order.getId();
+    }
+
+    @Transactional
+    public UUID deleteOrder(UUID orderId, ApiUser apiUser) {
+        Order order = findOrderOrThrow(orderId);
+
+        orderStatusTransitionPolicy.assertCanDelete(order, apiUser.userId(), apiUser.role());
+
+        order.delete(apiUser.userId());
+        return order.getId();
+    }
+
     private Order findOrderOrThrow(UUID orderId) {
         return orderRepository.findById(orderId).orElseThrow(() -> {
             throw AppException.of(OrderErrorCode.ORDER_NOT_FOUND);
@@ -98,7 +139,7 @@ public class OrderService {
     }
 
     private Shop getOpenedShop(UUID shopId) {
-        Shop shop = shopRepository.selectShop(shopId).orElseThrow(() -> {
+        Shop shop = shopRepository.findById(shopId).orElseThrow(() -> {
                 throw AppException.of(ShopErrorCode.SHOP_NOT_FOUND);
             });
         if (shop.getStatus() != ShopStatus.OPEN) {

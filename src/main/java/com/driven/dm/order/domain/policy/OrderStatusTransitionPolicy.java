@@ -19,16 +19,42 @@ public class OrderStatusTransitionPolicy {
         OrderStatus.DELIVERING,      List.of(OrderStatus.COMPLETED)
     );
 
+    private static final List<OrderStatus> CANCEL_ALLOWED = List.of(
+        OrderStatus.CREATED, OrderStatus.PAYMENT_PENDING);
+
+    private static final List<OrderStatus> DELETE_ALLOWED = List.of(
+        OrderStatus.CREATED, OrderStatus.PAYMENT_PENDING);
+
     public List<OrderStatus> nextStatuses(OrderStatus current) {
         return ALLOWED.getOrDefault(current, List.of());
     }
 
-    public void assertCanTransition(Order order, UUID actorId, UserRole role) {
-        if (role == UserRole.OWNER && !order.isShopOwner(actorId)) {
+    public void assertCanTransition(Order order, UUID actorId, UserRole userRole) {
+        if (userRole == UserRole.OWNER && !order.isShopOwner(actorId)) {
             throw AppException.of(OrderErrorCode.NOT_SHOP_OWNER);
         }
         if (order.getOrderStatus() == OrderStatus.COMPLETED) {
             throw AppException.of(OrderErrorCode.COMPLETED_ORDER);
+        }
+    }
+
+    public void assertCanCancel(Order order, UUID actorId, UserRole userRole) {
+        if (userRole == UserRole.OWNER && !order.isShopOwner(actorId)) {
+            throw AppException.of(OrderErrorCode.NOT_SHOP_OWNER);
+        }
+
+        if (!CANCEL_ALLOWED.contains(order.getOrderStatus())) {
+            throw AppException.of(OrderErrorCode.INVALID_CANCEL_STATUS);
+        }
+    }
+
+    public void assertCanDelete(Order order, UUID actorId, UserRole userRole) {
+        if (userRole == UserRole.OWNER && !order.isShopOwner(actorId)) {
+            throw AppException.of(OrderErrorCode.NOT_SHOP_OWNER);
+        }
+
+        if (!DELETE_ALLOWED.contains(order.getOrderStatus())) {
+            throw AppException.of(OrderErrorCode.INVALID_CANCEL_STATUS);
         }
     }
 }

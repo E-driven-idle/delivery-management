@@ -10,10 +10,12 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-public interface ShopJpaRepository extends JpaRepository<Shop, UUID> {
+public interface ShopRepository extends JpaRepository<Shop, UUID> {
 
     @Query("SELECT s FROM Shop s JOIN FETCH s.menu WHERE s.id = :shopId")
     Optional<Shop> findByIdWithMenus(@Param("shopId") UUID id);
+
+    Optional<Shop> findByMenu_Id(UUID menu_id);
 
     @Query("""
           SELECT s FROM Shop s

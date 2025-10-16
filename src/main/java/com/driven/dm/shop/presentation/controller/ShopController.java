@@ -10,8 +10,8 @@ import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.ShopAddressResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
-import com.driven.dm.shop.presentation.dto.response.ShopListResponseDto;
-import com.driven.dm.shop.presentation.dto.response.ShopResponseDto;
+import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
+import com.driven.dm.shop.presentation.dto.response.ShopResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopUpdateResponse;
 import jakarta.validation.Valid;
 import java.util.List;
@@ -49,32 +49,32 @@ public class ShopController {
     }
 
     @GetMapping("/search")
-    public ResponseEntity<List<ShopListResponseDto>> searchByShopName (@RequestParam("shopName") String shopName) {
+    public ResponseEntity<List<ShopListResponse>> searchByShopName (@RequestParam("shopName") String shopName) {
 
-        List<ShopListResponseDto> shopListResponseDto = shopService.searchByShopName(shopName);
-        return ResponseEntity.ok().body(shopListResponseDto);
+        List<ShopListResponse> shopListResponse = shopService.searchByShopName(shopName);
+        return ResponseEntity.ok().body(shopListResponse);
     }
 
     @GetMapping("/category")
-    public ResponseEntity<List<ShopListResponseDto>> searchByCategory(
+    public ResponseEntity<List<ShopListResponse>> searchByCategory(
         @RequestParam("category")ShopCategory category
     ) {
-        List<ShopListResponseDto> shopListResponseDto = shopService.searchByCategory(category);
-        return ResponseEntity.ok().body(shopListResponseDto);
+        List<ShopListResponse> shopListResponse = shopService.searchByCategory(category);
+        return ResponseEntity.ok().body(shopListResponse);
     }
 
     @GetMapping
-    public ResponseEntity<List<ShopListResponseDto>> shopList(){
-        List<ShopListResponseDto> shopListResponseDto = shopService.shopList();
+    public ResponseEntity<List<ShopListResponse>> shopList(){
+        List<ShopListResponse> shopListResponse = shopService.shopList();
 
-        return ResponseEntity.ok().body(shopListResponseDto);
+        return ResponseEntity.ok().body(shopListResponse);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<ShopResponseDto> selectShop(@PathVariable UUID id) {
-        ShopResponseDto shopResponseDto = shopService.selectShop(id);
+    public ResponseEntity<ShopResponse> selectShop(@PathVariable UUID id) {
+        ShopResponse shopResponse = shopService.selectShop(id);
 
-        return ResponseEntity.ok().body(shopResponseDto);
+        return ResponseEntity.ok().body(shopResponse);
     }
 
     @PutMapping("/{id}")
