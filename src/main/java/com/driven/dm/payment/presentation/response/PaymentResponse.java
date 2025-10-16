@@ -30,7 +30,8 @@ public class PaymentResponse {
 	private String clientToken;
 
 	public static PaymentResponse from(Payment payment) {
-		if (payment == null) return null;
+		if (payment == null)
+			return null;
 
 		return PaymentResponse.builder()
 							  .paymentId(payment.getId())

@@ -17,6 +17,7 @@ import com.driven.dm.payment.domain.repository.IdempotencyStore;
 import com.driven.dm.payment.domain.repository.PaymentRepository;
 import com.driven.dm.payment.presentation.request.PaymentCreateRequest;
 import com.driven.dm.payment.presentation.response.PaymentResponse;
+import com.driven.dm.payment.presentation.response.PaymentStatusResponse;
 import com.driven.dm.user.application.service.UserReader;
 import com.driven.dm.user.domain.entity.User;
 
@@ -71,5 +72,12 @@ public class PaymentService {
 		if (!Objects.equals(order.getTotalPrice(), request.getAmount())) {
 			throw new AppException(PaymentErrorCode.AMOUNT_MISMATCH);
 		}
+	}
+
+	public PaymentStatusResponse getPayment(UUID paymentId) {
+		Payment payment = paymentRepository.findById(paymentId)
+										   .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
+
+		return PaymentStatusResponse.from(payment);
 	}
 }

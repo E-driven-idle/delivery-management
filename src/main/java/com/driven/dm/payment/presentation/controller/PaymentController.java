@@ -1,8 +1,12 @@
 package com.driven.dm.payment.presentation.controller;
 
+import java.util.UUID;
+
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestHeader;
@@ -12,6 +16,7 @@ import com.driven.dm.global.config.security.SecurityUser;
 import com.driven.dm.payment.application.service.PaymentService;
 import com.driven.dm.payment.presentation.request.PaymentCreateRequest;
 import com.driven.dm.payment.presentation.response.PaymentResponse;
+import com.driven.dm.payment.presentation.response.PaymentStatusResponse;
 
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -32,5 +37,12 @@ public class PaymentController {
 		) {
 		PaymentResponse response = paymentService.createPayment(request, securityUser, idemKey);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
+	}
+
+	@GetMapping("/{paymentId}")
+	public ResponseEntity<PaymentStatusResponse> getPaymentStatus(@PathVariable UUID paymentId) {
+		PaymentStatusResponse response = paymentService.getPayment(paymentId);
+
+		return ResponseEntity.ok(response);
 	}
 }
