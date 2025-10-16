@@ -145,10 +145,10 @@ public class ReviewServiceImpl implements ReviewService {
 
     private void recalcAndSaveShopAvg(UUID shopId) {
         Double avg = reviewRepository.getAvgRatingOfShop(shopId);
-        Shop shop = shopJpaRepository.findById(shopId)
+        Shop shop = shopRepository.findById(shopId)
             .orElseThrow(() -> new AppException(ReviewErrorCode.REVIEW_NOT_FOUND));
 
         shop.updateAvgRating(avg);
-        shopJpaRepository.saveAndFlush(shop);
+        shopRepository.saveAndFlush(shop);
     }
 }
