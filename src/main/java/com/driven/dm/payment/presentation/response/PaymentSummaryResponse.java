@@ -27,7 +27,8 @@ public class PaymentSummaryResponse {
 									 .orderId(payment.getOrder().getId())
 									 .amount(payment.getAmount())
 									 .status(payment.getStatus().name())
-									 .failureReason(payment.getFailureReason() != null ? payment.getFailureReason(): null)
+									 .failureReason(
+										 payment.getFailureReason() != null ? payment.getFailureReason() : null)
 									 .createdAt(payment.getCreatedAt())
 									 .build();
 	}

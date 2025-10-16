@@ -1,7 +1,5 @@
 package com.driven.dm.payment.presentation.controller;
 
-import java.util.UUID;
-
 import static org.springframework.data.domain.Sort.Direction.*;
 
 import java.util.UUID;
@@ -13,8 +11,6 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -30,7 +26,6 @@ import com.driven.dm.payment.domain.entity.Payment;
 import com.driven.dm.payment.presentation.request.PaymentCreateRequest;
 import com.driven.dm.payment.presentation.request.PaymentSearchCond;
 import com.driven.dm.payment.presentation.response.PaymentResponse;
-import com.driven.dm.payment.presentation.response.PaymentStatusResponse;
 import com.driven.dm.payment.presentation.response.PaymentStatusResponse;
 import com.driven.dm.payment.presentation.response.PaymentSummaryResponse;
 
@@ -51,7 +46,7 @@ public class PaymentController {
 		@RequestHeader(value = "Idempotency", required = false) String idemKey,
 		@Valid @RequestBody PaymentCreateRequest request,
 		@AuthenticationPrincipal SecurityUser securityUser
-		) {
+	) {
 		PaymentResponse response = paymentService.createPayment(request, securityUser, idemKey);
 		return ResponseEntity.status(HttpStatus.CREATED).body(response);
 	}
