@@ -32,6 +32,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
+import org.springframework.data.domain.Sort.Direction;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -53,9 +54,12 @@ public class MenuService {
         Shop shop = getShop(shop_id);
         User user = getUser(securityUser);
 
-        if (!isOwner(user, shop)
-            || user.getRole().equals(UserRole.MANAGER)
-            || user.getRole().equals(UserRole.MASTER)) {
+        boolean isPrivileged =
+            isOwner(user, shop)
+            || user.getRole() == UserRole.MANAGER
+            || user.getRole() == UserRole.MASTER;
+
+        if (!isPrivileged) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 
@@ -94,11 +98,7 @@ public class MenuService {
     @Transactional(readOnly = true)
     public Page<MenuListResponse> menuList(SecurityUser securityUser, int page, int size, Sort.Direction direction) {
 
-        int safePage = Math.max(0, page);
-        int safeSize = (size <= 0) ? 10 : size;
-        Sort.Direction safeDir = (direction == null) ? Sort.Direction.DESC : direction;
-
-        Pageable pageable = PageRequest.of(safePage, safeSize, Sort.by(safeDir, "createdAt"));
+        Pageable pageable = getPageable(page, size, direction);
 
         boolean isPrivileged =
             securityUser.getRole().equals(UserRole.MASTER)
@@ -114,11 +114,7 @@ public class MenuService {
 
     @Transactional(readOnly = true)
     public Page<MenuListResponse> searchByMenuName(String menuName, int page, int size, Sort.Direction direction) {
-        int safePage = Math.max(0, page);
-        int safeSize = (size <= 0) ? 10 : size;
-        Sort.Direction safeDir = (direction == null) ?  Sort.Direction.ASC : direction;
-
-        PageRequest pageable = PageRequest.of(safePage, safeSize, Sort.by(safeDir, "createdAt"));
+        Pageable pageable = getPageable(page, size, direction);
 
         String query = menuName.isEmpty() ? "" : menuName.trim();
         Page<Menu> menuListPage = menuRepository.findByMenuNameContainingAndStatusNot(query, MenuStatus.DELETED, pageable);
@@ -139,7 +135,12 @@ public class MenuService {
             throw new AppException(MenuErrorCode.MENU_NOT_FOUND);
         }
 
-        if (!isOwner(user, menu.getShop())) {
+        boolean isPrivileged =
+            isOwner(user, menu.getShop())
+                || user.getRole() == UserRole.MANAGER
+                || user.getRole() == UserRole.MASTER;
+
+        if (!isPrivileged) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 
@@ -227,6 +228,14 @@ public class MenuService {
             .shopName(shop.getShopName())
             .menus(menuResponses)
             .build();
+    }
+
+    private Pageable getPageable(int page, int size, Sort.Direction direction) {
+        int safePage = Math.max(0, page);
+        int safeSize = (size <= 0) ? 10 : size;
+        Sort.Direction safeDir = (direction == null) ? Direction.DESC : direction;
+
+        return  PageRequest.of(safePage, safeSize, Sort.by(safeDir, "createdAt"));
     }
 
     private Menu getMenu(UUID id) {
