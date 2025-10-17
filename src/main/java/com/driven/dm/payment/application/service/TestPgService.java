@@ -11,7 +11,7 @@ import com.driven.dm.global.exception.AppException;
 import com.driven.dm.order.application.exception.PaymentErrorCode;
 import com.driven.dm.payment.domain.entity.Payment;
 import com.driven.dm.payment.domain.entity.PaymentStatus;
-import com.driven.dm.payment.domain.repository.PaymentRepository;
+import com.driven.dm.payment.infrastructure.repository.PaymentRepository;
 
 import lombok.RequiredArgsConstructor;
 
@@ -31,12 +31,13 @@ public class TestPgService {
 									 .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
 		// 이미 최종 상태면 그대로 반환
-		if (!ALLOW_FROM.contains(p.getStatus())) return p;
+		if (!ALLOW_FROM.contains(p.getStatus()))
+			return p;
 
 		switch (decision) {
 			case "approve" -> p.approve(UUID.randomUUID().toString());
 			case "decline" -> p.decline(reason);
-			case "cancel"  -> p.cancel(reason);
+			case "cancel" -> p.cancel(reason);
 			default -> throw new IllegalArgumentException("unknown decision");
 		}
 		return p;

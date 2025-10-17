@@ -1,9 +1,12 @@
 package com.driven.dm.payment.application.service;
 
+import java.time.LocalDateTime;
 import java.util.Map;
 import java.util.Objects;
 import java.util.UUID;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import com.driven.dm.global.config.security.SecurityUser;
@@ -13,9 +16,10 @@ import com.driven.dm.order.application.service.OrderReader;
 import com.driven.dm.order.domain.entity.Order;
 import com.driven.dm.payment.application.mapper.PaymentRequestMapper;
 import com.driven.dm.payment.domain.entity.Payment;
-import com.driven.dm.payment.domain.repository.IdempotencyStore;
-import com.driven.dm.payment.domain.repository.PaymentRepository;
+import com.driven.dm.payment.infrastructure.repository.IdempotencyStore;
+import com.driven.dm.payment.infrastructure.repository.PaymentRepository;
 import com.driven.dm.payment.presentation.request.PaymentCreateRequest;
+import com.driven.dm.payment.presentation.request.PaymentSearchCond;
 import com.driven.dm.payment.presentation.response.PaymentResponse;
 import com.driven.dm.payment.presentation.response.PaymentStatusResponse;
 import com.driven.dm.user.application.service.UserReader;
@@ -79,5 +83,19 @@ public class PaymentService {
 										   .orElseThrow(() -> new AppException(PaymentErrorCode.PAYMENT_NOT_FOUND));
 
 		return PaymentStatusResponse.from(payment);
+	}
+
+	public Page<Payment> searchPayments(PaymentSearchCond cond, Pageable pageable) {
+
+		LocalDateTime from = cond.getFromDate() != null ? cond.getFromDate() : LocalDateTime.of(1970, 1, 1, 0, 0, 0);
+		LocalDateTime to = cond.getToDate() != null ? cond.getToDate() : LocalDateTime.of(9999, 12, 31, 23, 59, 59);
+
+		if (from.isAfter(to)) {
+			LocalDateTime tmp = from;
+			from = to;
+			to = tmp;
+		}
+
+		return paymentRepository.search(cond.getUserId(), cond.getStatus(), from, to, pageable);
 	}
 }
