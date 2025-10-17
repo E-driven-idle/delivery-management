@@ -133,16 +133,6 @@
 
 </details>
 
-### 🔧 인프라 구성 예시
-| 서비스 | 사양 | 역할 |
-|--------|------|------|
-| **EC2** | t3.medium | 애플리케이션 서버 |
-| **RDS** | t4g.micro (MySQL) | 관계형 데이터베이스 |
-| **ElastiCache** | t2.micro (Redis OSS) | 캐싱 및 세션 관리 |
-| **ECR** | Private Repository | 컨테이너 이미지 저장 |
-| **S3** | Standard | 사용자 업로드 파일 관리 |
-| **MongoDB Atlas** | - | 채팅 데이터 저장 |
-
 <br>
 
 ### 🚀 CI/CD 파이프라인 예시
@@ -246,32 +236,43 @@ graph LR
 
 <br>
 
-## 🚨 주요 트러블슈팅 예시
+## 🚨 주요 트러블슈팅
 
 <details>
-<summary>⚠️ Docker 빌드 캐시 이슈</summary>
+<summary>⚠️ AI 프롬프트 개선</summary>
 
-- **문제**: 코드 수정 후 배포했으나 변경사항이 반영되지 않음<br/>
-- **원인**: Docker 레이어 캐시로 인해 소스코드 변경이 감지되지 않음<br/>
-- **해결**: `--no-cache` 옵션 사용 및 빌드 단계 최적화
+- **문제**: 메뉴 설명(menuDescription)을 생성하도록 설정했을 때,
+  AI가 생성한 문장들이 종종 메뉴의 특징과 잘 맞지 않거나, 자연스럽지 않은 어색한 문장으로 출력되는 문제가 발생했습니다.<br/>
+- **원인**: Zero-shot 방식은 모델에게 예시를 전혀 주지 않고 단순히 지시문(prompt)만으로 결과를 생성하기 때문에,
+  모델이 도메인 맥락(“음식 설명”이라는 구체적 상황)을 충분히 이해하지 못한 것이 원인이었습니다.<br/>
+- **해결**: 이후 Few-shot prompting을 적용하여, 프롬프트 안에 2~3개의 메뉴 예시와 그에 대한 설명 예시를 함께 제공하도록 변경했습니다.
+
+| 항목         | Zero-shot         | Few-shot            |
+| ---------- | ----------------- | ------------------- |
+| **설명 품질**  | 메뉴 맥락 불일치, 어색한 표현 | 문맥 일관, 자연스러운 설명     |
+| **구현 난이도** | 단순 (지시문 1줄)       | 예시 관리 필요 (프롬프트 길어짐) |
+| **응답 일관성** | 낮음                | 높음                  |
+| **적합한 상황** | 테스트용, 단순 태스크      | 실서비스용, 도메인 맞춤형      |
 
 </details>
 
 <details>
-<summary>⚠️ JPA Lazy Loading으로 인한 401 에러</summary>
+<summary>⚠️ AccessDeniedHandler 구현으로 403 오류 구분 개선</summary>
 
-- **문제**: Security 설정에 문제없음에도 401 Unauthorized 발생<br/>
-- **원인**: LazyInitializationException이 Security Filter에서 401로 변환됨<br/>
-- **해결**: QueryDSL fetch join 적용 및 GlobalExceptionHandler 보강<br/>
+- **문제**: 인증 관련 에러 뿐만이 아닌, 모든 에러(오타 포함)가 동일하게 403(Forbidden) 으로 응답되었습니다.<br/>
+- **원인**: Spring Security 기본 설정에서는 AccessDeniedException과 AuthenticationException 모두
+  Security Filter Chain 내부에서 같은 HTTP 403으로 처리되기 때문입니다. → 즉, `인증 실패(401)`와 `인가 실패(403)`의 경계가 명확히 분리되지 않았던 것.<br/>
+- **해결**: AccessDeniedHandler를 별도 구현하여, 인가 실패 상황을 명확히 식별하고
+  JSON 포맷의 일관된 에러 응답을 반환하도록 개선했습니다.<br/>
 
 </details>
 
 <details>
-<summary>⚠️ Rate Limiting 버킷 초기화 문제</summary>
+<summary>⚠️ </summary>
 
-- **문제**: Bucket4j Rate Limiting이 매 요청마다 초기화됨<br/>
-- **원인**: BucketConfiguration이 매번 새로 생성됨<br/>
-- **해결**: 필드 레벨에서 고정된 Configuration 사용
+- **문제**: <br/>
+- **원인**: <br/>
+- **해결**: 
 
 </details>
 
