@@ -101,8 +101,7 @@
   사용자는 가게 목록 리스트를 조회할 때 가게 이름으로 필터링을 넣어서 검색할 수 있습니다. 추가로 카테고리 별로 가게를 조회를 할 수 있습니다.
 - **가게 삭제:** 사용자는 자신의 가게를 소프트 삭제할 수 있습니다. 실제 데이터는 삭제 되지 않으며 status 필드를 통해 비활성화됩니다.
 - **가게 주소 등록:** 사용자는 Kakao Map API 를 활용하여 주소를 등록할 수 있습니다. 실제 주소 하나의 값만 입력을 받게 되며 DB에는 전체주소, 시/군/구,
-  행정코드, 경도와 위도 까지 저장이 이루어집니다.<br>
-
+  행정코드, 경도와 위도 까지 저장이 이루어집니다.
 - **메뉴 생성:** 사용자는 메뉴를 등록할 때 메뉴 설명을 OpenAI로 활용해 작성할 건지, 직접 작성할건지 선택하여 생성할 수 있습니다. 메뉴 등록시에는 초기 상태로
   ACTIVE 으로 설정되고 이후 상태 변경 이력을 추적할 수 있습니다.
 - **메뉴 조회:** 사용자는 전체 메뉴 리스트를 가게 이름과 같이 확인해볼 수 있습니다. 조회 시 가게 이름, 가게에 생성 되어 있는 메뉴 리스트, 가격 등을 조회할 수
@@ -118,9 +117,19 @@
 
 ### 🛍️ 결제
 
-- **기능 이름:**
-- **기능 이름:**
-- **기능 이름:**
+- **결제 요청 처리:**
+  - 사용자의 `orderId`, 결제 금액, 수단 정보 등을 입력 받아 결제 요청 생성
+  - 결제 성공 여부를 가짜 PG 컨트롤러를 통해 결정 (`approve=true/false` 기반)
+- **Idempotency 키 적용**
+  - 중복 결제 요청 방지를 위한 키를 사용해, 동일한 요청이 여러 번 처리되지 않도록 보장
+- **결제 상태 흐름 관리**
+  - `PAYMENT_PENDING → PG_REQUESTED → PAYMENT_APPROVED or PAYMENT_DECLINED → PAYMENT_CANCELED`
+  - 상태 값에 따른 유효성 검증 및 예외 처리 적용
+- **주문 연동 처리**
+  - 결제가 승인된 경우에만 주문이 확정되며, 이 과정은 `order.confirm()` 로직으로 연결
+  - 결제 실패 또는 취소 시 주문 확정이 불가
+- **유저 인증 및 권한 체크**
+  - 결제 확인 시 로그인한 유저와 결제 요청자의 일치 여부를 검사해, 권한 없는 접근 차단
 
 ### 🛒 장바구니
 
@@ -154,7 +163,7 @@
 <details>
 <summary>🔸 v2</summary>
 
-<img src="https://github.com/user-attachments/assets/a541cc95-b84e-4e7c-a336-59b06aec9a72" width="800" />
+<img src="https://github.com/user-attachments/assets/0e20ae8d-5bb3-467c-8631-03d6be2f3284" width="800" />
 
 </details>
 
@@ -498,7 +507,7 @@ graph LR
 <details>
 <summary>🔸 v2</summary>
 
-<img src="https://github.com/user-attachments/assets/7bcebba7-0269-4275-b80b-75b44d1b3902" width="800" />
+ㅋ<img src="https://github.com/user-attachments/assets/0221e7da-4d04-4824-9cce-7d2cadc0b154" width="800" />
 
 </details>
 
@@ -511,23 +520,7 @@ graph LR
 <details>
 <summary>🔸 결제 시스템 고도화</summary>
 
-현재 결제 로직은 **Toss Payments API** 기반의 **Mock 결제 흐름**으로 구현되어 있으며, 아래와 같은 기능을 포함합니다:
-
-- **결제 요청 처리**
-  - 사용자의 `orderId`, 결제 금액, 수단 정보 등을 입력 받아 결제 요청 생성
-  - 결제 성공 여부를 가짜 PG 컨트롤러를 통해 결정 (`approve=true/false` 기반)
-- **Idempotency 키 적용**
-  - 중복 결제 요청 방지를 위한 키를 사용해, 동일한 요청이 여러 번 처리되지 않도록 보장
-- **결제 상태 흐름 관리**
-  - `PAYMENT_PENDING → PG_REQUESTED → PAYMENT_APPROVED or PAYMENT_DECLINED → PAYMENT_CANCELED`
-  - 상태 값에 따른 유효성 검증 및 예외 처리 적용
-- **주문 연동 처리**
-  - 결제가 승인된 경우에만 주문이 확정되며, 이 과정은 `order.confirm()` 로직으로 연결
-  - 결제 실패 또는 취소 시 주문 확정이 불가
-- **유저 인증 및 권한 체크**
-  - 결제 확인 시 로그인한 유저와 결제 요청자의 일치 여부를 검사해, 권한 없는 접근 차단
-
-**향후 계획**
+현재 결제 로직은 **Toss Payments API** 기반의 **Mock 결제 흐름**으로 구현되어 있으며, 아래와 같이 확장할 예정입니다.
 
 - 실제 **Toss Payments 실거래 API 연동**
   - 상점 키와 시크릿 키 기반의 실 결제 환경 구성
