@@ -517,7 +517,7 @@ graph LR
 <details>
 <summary>🔸 v2</summary>
 
-ㅋ<img src="https://github.com/user-attachments/assets/0221e7da-4d04-4824-9cce-7d2cadc0b154" width="800" />
+<img src="https://github.com/user-attachments/assets/0221e7da-4d04-4824-9cce-7d2cadc0b154" width="800" />
 
 </details>
 
