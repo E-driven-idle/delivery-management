@@ -54,9 +54,12 @@ public class MenuService {
         Shop shop = getShop(shop_id);
         User user = getUser(securityUser);
 
-        if (!isOwner(user, shop)
-            || user.getRole().equals(UserRole.MANAGER)
-            || user.getRole().equals(UserRole.MASTER)) {
+        boolean isPrivileged =
+            isOwner(user, shop)
+            || user.getRole() == UserRole.MANAGER
+            || user.getRole() == UserRole.MASTER;
+
+        if (!isPrivileged) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 
@@ -132,7 +135,12 @@ public class MenuService {
             throw new AppException(MenuErrorCode.MENU_NOT_FOUND);
         }
 
-        if (!isOwner(user, menu.getShop())) {
+        boolean isPrivileged =
+            isOwner(user, menu.getShop())
+                || user.getRole() == UserRole.MANAGER
+                || user.getRole() == UserRole.MASTER;
+
+        if (!isPrivileged) {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 

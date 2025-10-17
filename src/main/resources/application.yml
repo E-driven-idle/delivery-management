@@ -2,4 +2,9 @@ spring:
   application:
     name: delivery-management
   profiles:
-    active: local
+    active: develop
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,env,configprops
