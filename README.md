@@ -148,9 +148,8 @@
 ```mermaid
 graph LR
     A[GitHub] --> B[GitHub Actions]
-    B --> C[Docker Build]
-    C --> D[ECR Push]
-    D --> E[EC2 Deploy]
+    B --> C[(Build &) GHCR Push]
+    C --> D[EC2 Deploy(GHCR pull 후 compose up)]
 ```
 
 ---
@@ -491,6 +490,8 @@ graph LR
 
 </details>
 
+---
+
 <br>
 
 ## 👥 팀원 소개
@@ -504,23 +505,6 @@ graph LR
 | **BE 개발자** | 박준형 | Cart 도메인, Review 도메인                 | [🍀](https://github.com/wnsgud0310) |
 
 <br>
-
-## 🏆 향후 개선 계획 예시
-
-### 🔦 기능 확장
-- [ ] 캘린더에서 반려동물 D-day 알림 추가
-- [ ] 반려 동물의 성장 일지 기록하기
-
-### 🔐 보안 강화
-- [ ] Parameter Store를 통한 환경변수 중앙 관리
-- [ ] Private Subnet으로 EC2 이동 및 NAT Gateway 구성
-
-### 📈 확장성 개선
-- [ ] Auto Scaling Group 적용
-- [ ] Application Load Balancer 도입
-
-### 🚀 성능 최적화
-- [ ] Spring Batch 파티셔닝 적용
 
 ---
 
