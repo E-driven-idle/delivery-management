@@ -229,24 +229,6 @@ graph LR
 -
 </details>
 
-<details>
-<summary>🔶 적용한 기술 이름</summary>
-
-**🔹 배경**
-- 
--
-
-**🔹 비교**
-- 
--
--
-
-**🔹 결론**
-- 
--
--
-</details>
-
 ---
 
 <br>
@@ -283,7 +265,7 @@ graph LR
 </details>
 
 <details>
-<summary>⚠️ </summary>
+<summary>⚠️ 배포 환경에서 OpenAI API 호출 실패</summary>
 
 - **문제**: <br/>
 - **원인**: <br/>
@@ -507,6 +489,14 @@ graph LR
 <img src="https://github.com/user-attachments/assets/7bcebba7-0269-4275-b80b-75b44d1b3902" width="800" />
 
 </details>
+
+---
+
+<br>
+
+## 🏆 향후 개선 및 확장 계획
+
+- **결제 시스템 고도화**: 현재는 **Toss Payments** API를 기반으로 결제 요청 흐름(Mock 형태)만 설계하였으며, 추후 실제 상점 키 연동 및 결제 승인/취소 로직을 포함한 **실거래 기능으로 확장 예정**
 
 ---
 
