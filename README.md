@@ -117,19 +117,7 @@
 
 ## 🏗️ 시스템 아키텍처
 
-<details>
-<summary>🔸 v1</summary>
-
-<img src="https://github.com/user-attachments/assets/da2cb565-19b9-4dff-8e12-1be80505844f" width="800" />
-
-</details>
-
-<details>
-<summary>🔸 v2</summary>
-
-
-
-</details>
+<img src="https://github.com/user-attachments/assets/a541cc95-b84e-4e7c-a336-59b06aec9a72" width="800" />
 
 ### 🔧 인프라 구성 예시
 | 서비스 | 사양 | 역할 |
@@ -441,10 +429,13 @@ graph LR
 <details>
 <summary>🔸 Shop</summary>
 
-<img src="https://github.com/user-attachments/assets/ea33a54b-9618-4ac8-8d16-6cc5f13351b0" width="800" />
+<img src="https://github.com/user-attachments/assets/ef9fef89-ee3c-4332-9bbc-b0e5e1dde590" width="800" />
 <br>
 
-<img src="https://github.com/user-attachments/assets/c8f7d674-2bc9-40fc-a954-e8f7eacda686" width="800" />
+<img src="https://github.com/user-attachments/assets/c945e352-79dd-4e6d-ae34-e5e441c76bab" width="800" />
+<br>
+
+<img src="https://github.com/user-attachments/assets/60a88658-a675-4a69-8dd6-33dde8da741d" width="800" />
 
 </details>
 
@@ -461,7 +452,10 @@ graph LR
 <details>
 <summary>🔸 Menu</summary>
 
-<img src="https://github.com/user-attachments/assets/f6c5d157-6e01-4080-8dd6-606d9d4c5b88" width="800" />
+<img src="https://github.com/user-attachments/assets/3d60cd0e-01ac-4123-978f-6c07bb27400e" width="800" />
+<br>
+
+<img src="https://github.com/user-attachments/assets/2991614a-932f-4f06-966a-cc3655ae39bc" width="800" />
 
 </details>
 
