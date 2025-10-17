@@ -117,7 +117,19 @@
 
 ## 🏗️ 시스템 아키텍처
 
+<details>
+<summary>🔸 v1</summary>
+
+<img src="https://github.com/user-attachments/assets/da2cb565-19b9-4dff-8e12-1be80505844f" width="800" />
+
+</details>
+
+<details>
+<summary>🔸 v2</summary>
+
 <img src="https://github.com/user-attachments/assets/a541cc95-b84e-4e7c-a336-59b06aec9a72" width="800" />
+
+</details>
 
 ### 🔧 인프라 구성 예시
 | 서비스 | 사양 | 역할 |
@@ -233,62 +245,6 @@ graph LR
 
 <br>
 
-## 📊 성능 개선 예시 (추후에 딱히 없다면 아예 삭제 예정)
-
-<details>
-<summary>🚀 스프링 배치를 통한 91% 성능 개선</summary>
-
-**🔹 기능 소개**
-- 매일 자정마다 유저에게 데일리 질문 알림을 발송하는 기능 구현
-- `Notification` 엔티티를 사용해 유저와 알림 내용을 저장
-
-**🔹 기술 결정 과정**
-- 기존 `findAll()` + 반복 저장 방식은 유저 수 증가 시 병목 발생
-- Spring Batch + `chunk` 기반 처리로 대체
-- `TaskExecutor`로 멀티스레드 병렬 처리 적용
-
-**🔹 성능 테스트 결과**
-- 기존 방식: 10만명 기준 평균 **58초**
-- Spring Batch + 비동기 처리: **7초**
-- JdbcCursorItemReader로 리팩토링 후: **5초**
-- **총 91.3% 성능 개선** 달성
-
-**🔹 회고**
-- 단순 반복 저장 방식의 병목 문제를 Spring Batch로 해결
-- reader/processor/writer 구조와 JDBC vs JPA 차이 학습
-- 향후 파티셔닝 도입 및 병렬 Step 처리 고려 예정
-
-</details>
-
-<details>
-<summary>🚀 Redis 캐싱을 통한 인기 랭킹 성능 개선</summary>
-
-**🔹 기능 소개**
-- 인기 장소 랭킹 데이터를 Redis에 캐싱하여 빠르게 조회
-
-**🔹 기술 결정 과정**
-- 기존 방식: QueryDSL로 DB 직접 조회 (좋아요 수 기준 정렬)
-- 리팩토링 방식: Redis ZSet을 사용해 랭킹 구현
-    - 좋아요 시 score 증가, 취소 시 감소
-    - 캐시된 `placeId`로 DB에서 상세 데이터 조회
-
-**🔹 성능 테스트 결과 (JMeter + Grafana)**
-- 평균 응답시간: **509ms 개선 (약 3.1%)**
-- 최소 응답시간: **5ms (SQL 대비 15배 빠름)**
-- 3000명 동시 접속 시 **0% 오류율**
-- Redis가 응답 지연과 부하 분산에 효과적임 확인
-
-**🔹 회고**
-- Redis 도입으로 캐시 기반 구조의 이점 체감
-- 과부하 상황에서 서버 자원 한계를 시각화하며 대응 전략 필요성 인지
-- 추후 TTL 설정, 조회 필드 최적화, 인덱싱 등도 개선 포인트로 도출
-
-</details>
-
----
-
-<br>
-
 ## 🚨 주요 트러블슈팅 예시
 
 <details>
@@ -322,12 +278,15 @@ graph LR
 
 <br>
 
-## 🛡️ Test Coverage
-![Test Coverage 캡처 이미지 넣을 곳]()
+[//]: # (## 🛡️ Test Coverage)
 
----
+[//]: # (![Test Coverage 캡처 이미지 넣을 곳]&#40;&#41;)
 
-<br>
+[//]: # ()
+[//]: # (---)
+
+[//]: # ()
+[//]: # (<br>)
 
 ## 🗂️ 프로젝트 구조
 
@@ -530,10 +489,6 @@ graph LR
 
 <img src="https://github.com/user-attachments/assets/7bcebba7-0269-4275-b80b-75b44d1b3902" width="800" />
 
-</details>
-
-<details>
-<summary>🔸 v3</summary>
 </details>
 
 <br>
