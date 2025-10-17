@@ -96,10 +96,12 @@ public class Payment extends BaseEntity {
 		this.transactionId = pgTid; // 테스트라서 null. 원래는 id값을 넣어줘야함.
 		this.approvedAt = LocalDateTime.now();
 	}
+
 	public void decline(String reason) {
 		this.status = PaymentStatus.PAYMENT_DECLINED;
 		this.failureReason = reason;
 	}
+
 	public void cancel(String reason) {
 		this.status = PaymentStatus.PAYMENT_CANCELED;
 		this.failureReason = reason;
