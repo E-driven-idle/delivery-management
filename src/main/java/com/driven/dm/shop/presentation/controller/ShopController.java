@@ -7,11 +7,11 @@ import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.presentation.dto.request.ShopAddressCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopAddressUpdateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
-import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest_Delete;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.AdminShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopAddressResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
+import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse_Delete;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopUpdateResponse;
@@ -47,10 +47,10 @@ public class ShopController {
         @AuthenticationPrincipal SecurityUser securityUser,
         @RequestBody ShopCreateRequest shopCreateRequest){
 
-        ShopCreateResponse shopCreateResponse = shopService.createShop(securityUser,
+        ShopCreateResponse shopCreateResponseDelete = shopService.createShop(securityUser,
             shopCreateRequest);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(shopCreateResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(shopCreateResponseDelete);
     }
 
     @GetMapping("/search")

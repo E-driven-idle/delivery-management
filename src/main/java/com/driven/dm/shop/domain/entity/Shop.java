@@ -71,7 +71,7 @@ public class Shop extends BaseEntity {
     private String address;
 
     @JdbcTypeCode(SqlTypes.GEOGRAPHY)
-    @Column(nullable = false, columnDefinition = "geography(Point,4326")
+    @Column(nullable = false, columnDefinition = "geography(Point,4326)")
     private Point location;
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
@@ -99,7 +99,7 @@ public class Shop extends BaseEntity {
         return shop;
     }
 
-    public static Shop of(User user, ShopCreateRequest shopCreateRequest) {
+    public static Shop of(User user, ShopCreateRequest shopCreateRequest, Point location) {
         Shop shop = new Shop();
         shop.owner = user;
         shop.shopName = shopCreateRequest.shopName();
@@ -107,6 +107,7 @@ public class Shop extends BaseEntity {
         shop.address = shopCreateRequest.address();
         shop.avgRating = 0.0;
         shop.category = ShopCategory.NONE;
+        shop.location = location;
         return shop;
     }
 

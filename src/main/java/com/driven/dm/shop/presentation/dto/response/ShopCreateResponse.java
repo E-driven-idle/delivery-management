@@ -1,14 +1,22 @@
 package com.driven.dm.shop.presentation.dto.response;
 
 import com.driven.dm.shop.domain.entity.Shop;
-import lombok.Builder;
-import lombok.Data;
 
-@Data
-@Builder
-public class ShopCreateResponse {
-
-    private String shopName;
-    private String shopDescription;
+public record ShopCreateResponse(
+    String shopName,
+    String description,
+    String address,
+    Double latitude,
+    Double longitude
+) {
+    public static ShopCreateResponse from(Shop shop) {
+        return new ShopCreateResponse(
+            shop.getShopName(),
+            shop.getDescription(),
+            shop.getAddress(),
+            shop.getLocation().getY(),
+            shop.getLocation().getX()
+        );
+    }
 
 }
