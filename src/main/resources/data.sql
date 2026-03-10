@@ -1,0 +1,50 @@
+INSERT INTO p_user (
+    user_id,
+    username,
+    nickname,
+    password,
+    role,
+    status,
+    created_at,
+    updated_at
+) VALUES
+(
+    gen_random_uuid(),
+    'master',
+    'master',
+    '$2a$10$10q68tR9.mRuYBOqcvmi9uYriG8/UikbtT3oL0PnWn6wE7mO463fS',
+    'MASTER',
+    'ACTIVE',
+    now(),
+    now()
+),
+(
+    gen_random_uuid(),
+    'manager',
+    'manager',
+    '$2a$10$10q68tR9.mRuYBOqcvmi9uYriG8/UikbtT3oL0PnWn6wE7mO463fS',
+    'MANAGER',
+    'ACTIVE',
+    now(),
+    now()
+),
+(
+    gen_random_uuid(),
+    'owner',
+    'owner',
+    '$2a$10$10q68tR9.mRuYBOqcvmi9uYriG8/UikbtT3oL0PnWn6wE7mO463fS',
+    'OWNER',
+    'ACTIVE',
+    now(),
+    now()
+),
+(
+    gen_random_uuid(),
+    'customer',
+    'customer',
+    '$2a$10$10q68tR9.mRuYBOqcvmi9uYriG8/UikbtT3oL0PnWn6wE7mO463fS',
+    'CUSTOMER',
+    'ACTIVE',
+    now(),
+    now()
+);
