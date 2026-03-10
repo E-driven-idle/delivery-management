@@ -1,9 +1,9 @@
 spring:
   datasource:
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:changhee}
+    username: ${POSTGRES_USER:user}
+    password: ${POSTGRES_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
 
   jpa:
     open-in-view: false
@@ -70,3 +70,7 @@ jwt:
 kakao:
   local:
     rest-api-key: ${KAKAO_KEY}
+
+google:
+  maps:
+    api-key: ${GOOGLE_MAPS_API_KEY}
