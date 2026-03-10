@@ -15,6 +15,7 @@ import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest_Delete;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
+import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse_Delete;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
@@ -68,8 +69,8 @@ class ShopServiceTest {
 
         ShopCreateResponse res = shopService.createShop(securityUser, req);
 
-        assertThat(res.getShopName()).isEqualTo("카페");
-        assertThat(res.getShopDescription()).isEqualTo("분위기 좋음");
+        assertThat(res.shopName()).isEqualTo("카페");
+        assertThat(res.description()).isEqualTo("분위기 좋음");
     }
 
     @Test
