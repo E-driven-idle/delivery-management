@@ -13,9 +13,9 @@ import com.driven.dm.shop.domain.entity.Shop;
 import com.driven.dm.shop.domain.entity.ShopStatus;
 import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
+import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest_Delete;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
-import com.driven.dm.shop.presentation.dto.response.ShopResponse;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
@@ -60,10 +60,11 @@ class ShopServiceTest {
         given(shopRepository.save(any(Shop.class)))
             .willAnswer(inv -> inv.getArgument(0));
 
-        ShopCreateRequest req = ShopCreateRequest.builder()
-            .shopName("카페")
-            .description("분위기 좋음")
-            .build();
+        ShopCreateRequest req = new ShopCreateRequest(
+            "카페",
+            "분위기 좋음",
+            "발산 어나더사이드"
+        );
 
         ShopCreateResponse res = shopService.createShop(securityUser, req);
 
@@ -77,10 +78,11 @@ class ShopServiceTest {
         SecurityUser securityUser = new SecurityUser(UUID.randomUUID(), "testUser", "abcdefg123@@",
             UserRole.CUSTOMER);
 
-        ShopCreateRequest req = ShopCreateRequest.builder()
-            .shopName("카페")
-            .description("분위기 좋음")
-            .build();
+        ShopCreateRequest req = new ShopCreateRequest(
+            "카페",
+            "분위기 좋음",
+            "발산 어나더사이드"
+        );
 
         assertThrows(AppException.class, () -> shopService.createShop(securityUser, req));
     }
@@ -93,12 +95,12 @@ class ShopServiceTest {
         User user = User.of(securityUser.getUsername(), securityUser.getPassword(), "testUser");
         user.changeRole(UserRole.OWNER);
 
-        Shop shop1 = Shop.of(user, ShopCreateRequest.builder()
+        Shop shop1 = Shop.of(user, ShopCreateRequest_Delete.builder()
             .shopName("카페")
             .description("분위기 좋음")
             .build());
 
-        Shop shop2 = Shop.of(user, ShopCreateRequest.builder()
+        Shop shop2 = Shop.of(user, ShopCreateRequest_Delete.builder()
             .shopName("식당")
             .description("맛있음")
             .build());

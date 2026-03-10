@@ -10,6 +10,7 @@ import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
 import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
+import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest_Delete;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.AdminShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
@@ -20,8 +21,6 @@ import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
@@ -77,7 +76,7 @@ public class ShopService {
             .description(shop.getDescription())
             .category(shop.getCategory().toString())
             .avgRating(shop.getAvgRating())
-            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .fullAddress(shop.getAddress() != null ? shop.getAddress() : "")
             .build());
 
     }
@@ -90,17 +89,12 @@ public class ShopService {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }
 
-        String fullAddress = Optional.ofNullable(shop.getAddress())
-            .map(ShopAddress::getFullAddress)
-            .orElse(null);
-
         return ShopResponse.builder()
             .shopName(shop.getShopName())
             .description(shop.getDescription())
             .category(shop.getCategory())
             .avgRating(shop.getAvgRating())
             .shopStatus(shop.getStatus())
-            .fullAddress(fullAddress)
             .build();
     }
 
@@ -119,7 +113,7 @@ public class ShopService {
             .description(shop.getDescription())
             .category(shop.getCategory().toString())
             .avgRating(shop.getAvgRating())
-            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .fullAddress(shop.getAddress() != null ? shop.getAddress() : "")
             .build());
 
     }
@@ -138,7 +132,7 @@ public class ShopService {
             .description(shop.getDescription())
             .category(shop.getCategory().toString())
             .avgRating(shop.getAvgRating())
-            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .fullAddress(shop.getAddress() != null ? shop.getAddress(): "")
             .build());
     }
 
@@ -205,7 +199,7 @@ public class ShopService {
             .description(shop.getDescription())
             .category(shop.getCategory().toString())
             .avgRating(shop.getAvgRating())
-            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .fullAddress(shop.getAddress() != null ? shop.getAddress(): "")
             .build());
     }
 
