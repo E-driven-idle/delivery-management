@@ -5,14 +5,16 @@ import com.driven.dm.global.exception.ApiErrorCode;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.shop.application.exception.ShopErrorCode;
 import com.driven.dm.shop.domain.entity.Shop;
-import com.driven.dm.shop.domain.entity.ShopAddress;
 import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.domain.entity.ShopStatus;
+import com.driven.dm.shop.infrastructure.GeocodingClient;
+import com.driven.dm.shop.infrastructure.GeocodingClient.GeoPoint;
 import com.driven.dm.shop.infrastructure.repository.ShopRepository;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.AdminShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
+import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse_Delete;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopUpdateResponse;
@@ -20,11 +22,11 @@ import com.driven.dm.user.application.exception.UserErrorCode;
 import com.driven.dm.user.domain.entity.User;
 import com.driven.dm.user.domain.entity.UserRole;
 import com.driven.dm.user.infrastructure.repository.UserRepository;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
+import org.locationtech.jts.geom.Coordinate;
+import org.locationtech.jts.geom.GeometryFactory;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Pageable;
@@ -39,6 +41,8 @@ public class ShopService {
 
     private final ShopRepository shopRepository;
     private final UserRepository userRepository;
+    private final GeocodingClient geocodingClient;
+    private final GeometryFactory geometryFactory =  new GeometryFactory();
 
     @Transactional
     public ShopCreateResponse createShop(SecurityUser securityUser,
@@ -55,13 +59,19 @@ public class ShopService {
             throw new AppException(ShopErrorCode.SHOP_NOT_OWNER);
         }
 
-        Shop shop = Shop.of(user, shopCreateRequest);
+        Point point;
+
+        GeoPoint geo = geocodingClient.convert(shopCreateRequest.address());
+
+        point = geometryFactory.createPoint(
+            new Coordinate(geo.longitude(), geo.latitude())
+        );
+        point.setSRID(4326);
+
+        Shop shop = Shop.of(user, shopCreateRequest, point);
         Shop createdShop = shopRepository.save(shop);
 
-        return ShopCreateResponse.builder()
-            .shopName(createdShop.getShopName())
-            .shopDescription(createdShop.getDescription())
-            .build();
+        return ShopCreateResponse.from(createdShop);
     }
 
     @Transactional(readOnly = true)
@@ -77,7 +87,7 @@ public class ShopService {
             .description(shop.getDescription())
             .category(shop.getCategory().toString())
             .avgRating(shop.getAvgRating())
-            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .fullAddress(shop.getAddress() != null ? shop.getAddress() : "")
             .build());
 
     }
@@ -90,17 +100,12 @@ public class ShopService {
             throw new AppException(ShopErrorCode.SHOP_NOT_FOUND);
         }
 
-        String fullAddress = Optional.ofNullable(shop.getAddress())
-            .map(ShopAddress::getFullAddress)
-            .orElse(null);
-
         return ShopResponse.builder()
             .shopName(shop.getShopName())
             .description(shop.getDescription())
             .category(shop.getCategory())
             .avgRating(shop.getAvgRating())
             .shopStatus(shop.getStatus())
-            .fullAddress(fullAddress)
             .build();
     }
 
@@ -119,7 +124,7 @@ public class ShopService {
             .description(shop.getDescription())
             .category(shop.getCategory().toString())
             .avgRating(shop.getAvgRating())
-            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .fullAddress(shop.getAddress() != null ? shop.getAddress() : "")
             .build());
 
     }
@@ -138,7 +143,7 @@ public class ShopService {
             .description(shop.getDescription())
             .category(shop.getCategory().toString())
             .avgRating(shop.getAvgRating())
-            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .fullAddress(shop.getAddress() != null ? shop.getAddress(): "")
             .build());
     }
 
@@ -205,7 +210,7 @@ public class ShopService {
             .description(shop.getDescription())
             .category(shop.getCategory().toString())
             .avgRating(shop.getAvgRating())
-            .fullAddress(shop.getAddress() != null ? shop.getAddress().getFullAddress() : "")
+            .fullAddress(shop.getAddress() != null ? shop.getAddress(): "")
             .build());
     }
 

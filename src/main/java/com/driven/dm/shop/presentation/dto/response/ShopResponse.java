@@ -33,9 +33,7 @@ public class ShopResponse {
             .avgRating(round1(shop.getAvgRating()))
             .shopStatus(shop.getStatus())
             .fullAddress(
-                shop.getAddress().getFullAddress() != null
-                    ? shop.getAddress().getFullAddress()
-                    : null
+                shop.getAddress()
             )
             .build();
     }

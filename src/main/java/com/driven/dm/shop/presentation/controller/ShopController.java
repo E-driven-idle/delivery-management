@@ -11,11 +11,11 @@ import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.AdminShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopAddressResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
+import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse_Delete;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopUpdateResponse;
 import jakarta.validation.Valid;
-import java.util.List;
 import java.util.UUID;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -47,9 +47,10 @@ public class ShopController {
         @AuthenticationPrincipal SecurityUser securityUser,
         @RequestBody ShopCreateRequest shopCreateRequest){
 
-        ShopCreateResponse shopCreateResponse = shopService.createShop(securityUser, shopCreateRequest);
+        ShopCreateResponse shopCreateResponseDelete = shopService.createShop(securityUser,
+            shopCreateRequest);
 
-        return ResponseEntity.status(HttpStatus.CREATED).body(shopCreateResponse);
+        return ResponseEntity.status(HttpStatus.CREATED).body(shopCreateResponseDelete);
     }
 
     @GetMapping("/search")

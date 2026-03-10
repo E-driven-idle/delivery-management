@@ -1,20 +1,25 @@
 spring:
   datasource:
+    url: jdbc:postgresql://localhost:5432/${POSTGRES_DB:changhee}
+    username: ${POSTGRES_USER:user}
+    password: ${POSTGRES_PASSWORD:password}
     driver-class-name: org.postgresql.Driver
-    url: ${DB_URL}
-    username: ${DB_USERNAME}
-    password: ${DB_PASSWORD}
 
   jpa:
     open-in-view: false
     hibernate:
-      ddl-auto: update
+      ddl-auto: create-drop
     properties:
       hibernate:
         format_sql: true
         show_sql: false
         highlight_sql: true
         jdbc.time_zone: Asia/Seoul
+    defer-datasource-initialization: true
+
+  sql:
+    init:
+      mode: always
 
   # OpenAI
   ai:
@@ -70,3 +75,7 @@ jwt:
 kakao:
   local:
     rest-api-key: ${KAKAO_KEY}
+
+google:
+  maps:
+    api-key: ${GOOGLE_MAPS_API_KEY}

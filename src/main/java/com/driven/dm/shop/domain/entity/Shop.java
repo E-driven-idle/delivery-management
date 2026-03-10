@@ -4,8 +4,8 @@ import com.driven.dm.global.entity.BaseEntity;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
+import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest_Delete;
 import com.driven.dm.user.domain.entity.User;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
@@ -18,7 +18,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import jakarta.persistence.OneToMany;
-import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
 import java.util.ArrayList;
 import java.util.List;
@@ -27,6 +26,9 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.ToString;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
+import org.locationtech.jts.geom.Point;
 
 @Entity
 @Getter
@@ -61,26 +63,51 @@ public class Shop extends BaseEntity {
     @Column(name = "shop_category")
     private ShopCategory category;
 
-    @OneToOne(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
-    @JsonManagedReference
-    private ShopAddress address;
+//    @OneToOne(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
+//    @JsonManagedReference
+//    private ShopAddress address;
+
+    @Column(nullable = false)
+    private String address;
+
+    @JdbcTypeCode(SqlTypes.GEOGRAPHY)
+    @Column(nullable = false, columnDefinition = "geography(Point,4326)")
+    private Point location;
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<Menu> menu = new ArrayList<>();
 
-    public static Shop of(ShopCreateRequest shopCreateRequest) {
+    public static Shop of(ShopCreateRequest_Delete shopCreateRequestDelete) {
 
-        return of(null, shopCreateRequest);
+        return of(null, shopCreateRequestDelete);
     }
 
-    public static Shop of(User user, ShopCreateRequest shopCreateRequest) {
+    /**
+     * 주소 정책 변경으로 인해 삭제 예정
+     * @param user
+     * @param shopCreateRequestDelete
+     * @return
+     */
+    public static Shop of(User user, ShopCreateRequest_Delete shopCreateRequestDelete) {
         Shop shop = new Shop();
         shop.owner = user;
-        shop.shopName = shopCreateRequest.getShopName();
-        shop.description = shopCreateRequest.getDescription();
+        shop.shopName = shopCreateRequestDelete.getShopName();
+        shop.description = shopCreateRequestDelete.getDescription();
         shop.status = ShopStatus.CLOSED;
         shop.avgRating = 0.0;
         shop.category = ShopCategory.NONE;
+        return shop;
+    }
+
+    public static Shop of(User user, ShopCreateRequest shopCreateRequest, Point location) {
+        Shop shop = new Shop();
+        shop.owner = user;
+        shop.shopName = shopCreateRequest.shopName();
+        shop.description = shopCreateRequest.description();
+        shop.address = shopCreateRequest.address();
+        shop.avgRating = 0.0;
+        shop.category = ShopCategory.NONE;
+        shop.location = location;
         return shop;
     }
 
