@@ -14,7 +14,6 @@ import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.AdminShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
-import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse_Delete;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopUpdateResponse;

@@ -4,7 +4,6 @@ import com.driven.dm.global.entity.BaseEntity;
 import com.driven.dm.global.exception.AppException;
 import com.driven.dm.menu.domain.entity.Menu;
 import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
-import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest_Delete;
 import com.driven.dm.user.domain.entity.User;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
@@ -63,10 +62,6 @@ public class Shop extends BaseEntity {
     @Column(name = "shop_category")
     private ShopCategory category;
 
-//    @OneToOne(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
-//    @JsonManagedReference
-//    private ShopAddress address;
-
     @Column(nullable = false)
     private String address;
 
@@ -76,28 +71,6 @@ public class Shop extends BaseEntity {
 
     @OneToMany(mappedBy = "shop", cascade = CascadeType.PERSIST, orphanRemoval = true)
     private List<Menu> menu = new ArrayList<>();
-
-    public static Shop of(ShopCreateRequest_Delete shopCreateRequestDelete) {
-
-        return of(null, shopCreateRequestDelete);
-    }
-
-    /**
-     * 주소 정책 변경으로 인해 삭제 예정
-     * @param user
-     * @param shopCreateRequestDelete
-     * @return
-     */
-    public static Shop of(User user, ShopCreateRequest_Delete shopCreateRequestDelete) {
-        Shop shop = new Shop();
-        shop.owner = user;
-        shop.shopName = shopCreateRequestDelete.getShopName();
-        shop.description = shopCreateRequestDelete.getDescription();
-        shop.status = ShopStatus.CLOSED;
-        shop.avgRating = 0.0;
-        shop.category = ShopCategory.NONE;
-        return shop;
-    }
 
     public static Shop of(User user, ShopCreateRequest shopCreateRequest, Point location) {
         Shop shop = new Shop();
