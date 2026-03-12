@@ -146,6 +146,25 @@ public class ShopService {
             .build());
     }
 
+    public Page<ShopResponse> searchShopsByAddress(String address, int radiusKm, int page, int size) {
+
+        GeoPoint geo = geocodingClient.convert(address);
+
+        Point point = geometryFactory.createPoint(
+            new Coordinate(geo.longitude(), geo.latitude())
+        );
+
+        point.setSRID(4326);
+
+        int radiusMeter = radiusKm * 1000;
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Shop> shops = shopRepository.findShopsWithinRadius(point, radiusMeter, pageable);
+
+        return shops.map(ShopResponse::from);
+    }
+
     @Transactional
     public ShopUpdateResponse updateShop(UUID id, SecurityUser securityUser,
         ShopUpdateRequest shopUpdateRequest) {
