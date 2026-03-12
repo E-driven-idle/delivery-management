@@ -6,6 +6,7 @@ import com.driven.dm.shop.domain.entity.ShopStatus;
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
+import org.locationtech.jts.geom.Point;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -36,4 +37,18 @@ public interface ShopRepository extends JpaRepository<Shop, UUID> {
 
     Page<Shop> findByStatusNot(ShopStatus status, Pageable pageable);
 
+    @Query("""
+        SELECT s
+        FROM Shop s
+        WHERE function(
+            'ST_DWithin',
+            s.location,
+            :point,
+            :radius
+        ) = true
+        """)
+    Page<Shop> findShopsWithinRadius(
+        @Param("point") Point point,
+        @Param("radius") int radiusMeter,
+        Pageable pageable);
 }

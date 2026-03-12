@@ -14,7 +14,6 @@ import com.driven.dm.shop.presentation.dto.request.ShopCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.AdminShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
-import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse_Delete;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopUpdateResponse;
@@ -145,6 +144,25 @@ public class ShopService {
             .avgRating(shop.getAvgRating())
             .fullAddress(shop.getAddress() != null ? shop.getAddress(): "")
             .build());
+    }
+
+    public Page<ShopResponse> searchShopsByAddress(String address, int radiusKm, int page, int size) {
+
+        GeoPoint geo = geocodingClient.convert(address);
+
+        Point point = geometryFactory.createPoint(
+            new Coordinate(geo.longitude(), geo.latitude())
+        );
+
+        point.setSRID(4326);
+
+        int radiusMeter = radiusKm * 1000;
+
+        Pageable pageable = PageRequest.of(page, size);
+
+        Page<Shop> shops = shopRepository.findShopsWithinRadius(point, radiusMeter, pageable);
+
+        return shops.map(ShopResponse::from);
     }
 
     @Transactional

@@ -3,6 +3,7 @@ package com.driven.dm.shop.presentation.controller;
 import com.driven.dm.global.config.security.SecurityUser;
 import com.driven.dm.shop.application.service.ShopAddressService;
 import com.driven.dm.shop.application.service.ShopService;
+import com.driven.dm.shop.domain.entity.ShopAddress;
 import com.driven.dm.shop.domain.entity.ShopCategory;
 import com.driven.dm.shop.presentation.dto.request.ShopAddressCreateRequest;
 import com.driven.dm.shop.presentation.dto.request.ShopAddressUpdateRequest;
@@ -11,7 +12,6 @@ import com.driven.dm.shop.presentation.dto.request.ShopUpdateRequest;
 import com.driven.dm.shop.presentation.dto.response.AdminShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopAddressResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse;
-import com.driven.dm.shop.presentation.dto.response.ShopCreateResponse_Delete;
 import com.driven.dm.shop.presentation.dto.response.ShopListResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopResponse;
 import com.driven.dm.shop.presentation.dto.response.ShopUpdateResponse;
@@ -85,6 +85,19 @@ public class ShopController {
         Page<ShopListResponse> shopListResponse = shopService.shopList(page, size, direction);
 
         return ResponseEntity.ok().body(shopListResponse);
+    }
+
+    @GetMapping("/address")
+    public ResponseEntity<Page<ShopResponse>> searchShopsByAddress(
+        @RequestParam String address,
+        @RequestParam(defaultValue = "1") int radiusKm,
+        @RequestParam(defaultValue = "0") int page,
+        @RequestParam(defaultValue = "10") int size
+    ) {
+
+        Page<ShopResponse> res = shopService.searchShopsByAddress(address, radiusKm, page, size);
+
+        return ResponseEntity.status(HttpStatus.OK).body(res);
     }
 
     @GetMapping("/{id}")
